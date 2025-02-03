@@ -26,25 +26,23 @@
 // Chrome & Edge 113+ : Enable Vulkan, Default ANGLE Vulkan, Vulkan from ANGLE, Unsafe WebGPU Support, and WebGPU Developer Features (if exsits)
 // Firefox Nightly: sudo snap install firefox --channel=latext/edge or download from https://www.mozilla.org/en-US/firefox/channel/desktop/
 
-import FilteredRenderer from '/Quest2/lib/Viz/2DFilteredRenderer.js'
-import Standard2DFullScreenObject from '/Quest2/lib/DSViz/Standard2DFullScreenObject.js'
-import Standard2DPGAPosedVertexColorObject from '/Quest2/lib/DSViz/Standard2DPGAPosedVertexColorObject.js'
-import LineStrip2DVertexObject from '/Quest2/lib/DSViz/LineStrip2DVertexObject.js'
-import DemoTreeObject from '/Quest2/lib/DSViz/DemoTreeObject.js'
-import TestObject from '/Quest2/lib/DSViz/TestObject.js'
-import PGA2D from '/Quest2/lib/Math/PGA2D.js'
-import TestObject2 from '/Quest2/lib/DSViz/TestObject2.js'
-import circleMaker from '/Quest2/lib/DSViz/circleMaker.js'
-import sunMaker from '/Quest2/lib/DSViz/sunMaker.js'
-import planetEarth from '/Quest2/lib/DSViz/planetEarth.js'
-import planetMercury from '/Quest2/lib/DSViz/planetMercury.js'
-import planetVenus from '/Quest2/lib/DSViz/planetVenus.js'
-import planetMars from '/Quest2/lib/DSViz/planetMars.js'
-import planetSaturn from '/Quest2/lib/DSViz/planetSaturn.js'
-import planetJupiter from '/Quest2/lib/DSViz/planetJupiter.js'
-import planetUranus from '/Quest2/lib/DSViz/planetUranus.js'
-import planetNeptune from '/Quest2/lib/DSViz/planetNeptune.js'
-import rocketship from '/Quest2/lib/DSViz/rocketship.js'
+import FilteredRenderer from '/lib/Viz/2DFilteredRenderer.js'
+import Standard2DFullScreenObject from '/lib/DSViz/Standard2DFullScreenObject.js'
+import Standard2DPGAPosedVertexColorObject from '/lib/DSViz/Standard2DPGAPosedVertexColorObject.js'
+import LineStrip2DVertexObject from '/lib/DSViz/LineStrip2DVertexObject.js'
+import DemoTreeObject from '/lib/DSViz/DemoTreeObject.js'
+import PGA2D from '/lib/Math/PGA2D.js'
+import circleMaker from '/lib/DSViz/circleMaker.js'
+import sunMaker from '/lib/DSViz/sunMaker.js'
+import planetEarth from '/lib/DSViz/planetEarth.js'
+import planetMercury from '/lib/DSViz/planetMercury.js'
+import planetVenus from '/lib/DSViz/planetVenus.js'
+import planetMars from '/lib/DSViz/planetMars.js'
+import planetSaturn from '/lib/DSViz/planetSaturn.js'
+import planetJupiter from '/lib/DSViz/planetJupiter.js'
+import planetUranus from '/lib/DSViz/planetUranus.js'
+import planetNeptune from '/lib/DSViz/planetNeptune.js'
+import rocketship from '/lib/DSViz/rocketship.js'
 
 
 
@@ -63,7 +61,7 @@ async function init() {
   await renderer.init();
 
   // Create a background
-  await renderer.appendSceneObject(new Standard2DFullScreenObject(renderer._device, renderer._canvasFormat, "/Quest2/assets/galaxy.png"));
+  await renderer.appendSceneObject(new Standard2DFullScreenObject(renderer._device, renderer._canvasFormat, "/assets/galaxy.png"));
 
   // Modify the canvas size
   const devicePixelRatio = window.devicePixelRatio || 1;
