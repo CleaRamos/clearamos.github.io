@@ -1,0 +1,23 @@
+html,
+body,
+.container {
+  overflow: hidden;
+  margin: 0;
+  text-align: center;
+  flex-direction: column;
+}
+
+/* canvas tag style by id */
+#renderCanvas {
+  image-rendering: auto;
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  align-content: center;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
