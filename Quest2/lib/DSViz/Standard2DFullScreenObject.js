@@ -30,7 +30,7 @@ export default class Standard2DFullScreenObject extends SceneObject {
     this._img = new Image();
     this._img.src = img;
   }
-  
+
   async createGeometry() {
     // Load img and create image bitmap
     await this._img.decode();
@@ -43,22 +43,22 @@ export default class Standard2DFullScreenObject extends SceneObject {
       usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
     });
     // Copy from CPU to GPU
-    this._device.queue.copyExternalImageToTexture({ source: this._bitmap }, { texture: this._texture }, [ this._bitmap.width, this._bitmap.height]);
+    this._device.queue.copyExternalImageToTexture({ source: this._bitmap }, { texture: this._texture }, [this._bitmap.width, this._bitmap.height]);
     // Create the texture sampler
     this._sampler = this._device.createSampler({
       magFilter: "linear",
       minFilter: "linear"
     });
   }
-  
+
   async createShaders() {
-    let shaderCode = await this.loadShader("/shaders/fullscreen.wgsl");
+    let shaderCode = await this.loadShader("/shaders/optimized_fullscreen.wgsl");
     this._shaderModule = this._device.createShaderModule({
       label: " Shader " + this.getName(),
       code: shaderCode,
-    }); 
+    });
   }
-  
+
   async createRenderPipeline() {
     this._renderPipeline = this._device.createRenderPipeline({
       label: "Render Pipeline " + this.getName(),
@@ -90,15 +90,15 @@ export default class Standard2DFullScreenObject extends SceneObject {
       ],
     });
   }
-  
+
   render(pass) {
     // add to render pass to draw the object
     pass.setPipeline(this._renderPipeline);   // which render pipeline to use
     pass.setBindGroup(0, this._bindGroup);    // bind group to bind texture to shader
     pass.draw(6, 1, 0, 0);                    // 6 vertices to draw a quad
   }
-  
-  async createComputePipeline() {}
-  
-  compute(pass) {}
+
+  async createComputePipeline() { }
+
+  compute(pass) { }
 }

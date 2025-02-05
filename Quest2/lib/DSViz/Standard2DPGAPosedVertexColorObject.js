@@ -30,7 +30,7 @@ export default class Standard2DPGAPosedVertexColorObject extends SceneObject {
     this._vertices = vertices;
     this._pose = pose;
   }
-  
+
   async createGeometry() {
     // Create vertex buffer to store the vertices in GPU
     this._vertexBuffer = this._device.createBuffer({
@@ -43,7 +43,7 @@ export default class Standard2DPGAPosedVertexColorObject extends SceneObject {
     // Defne vertex buffer layout - how the GPU should read the buffer
     this._vertexBufferLayout = {
       arrayStride: 6 * Float32Array.BYTES_PER_ELEMENT,
-      attributes: [{ 
+      attributes: [{
         // position 0 has two floats
         shaderLocation: 0,   // position in the vertex shader
         format: "float32x2", // two coordiantes
@@ -65,19 +65,19 @@ export default class Standard2DPGAPosedVertexColorObject extends SceneObject {
     // Copy from CPU to GPU
     this._device.queue.writeBuffer(this._poseBuffer, 0, this._pose);
   }
-  
+
   updateGeometry() {
     this._device.queue.writeBuffer(this._poseBuffer, 0, this._pose);
   }
-  
+
   async createShaders() {
-    let shaderCode = await this.loadShader("/shaders/standard2dpgacolored.wgsl");
+    let shaderCode = await this.loadShader("/shaders/optimized_standard2dpgacolored.wgsl");
     this._shaderModule = this._device.createShaderModule({
       label: " Shader " + this.getName(),
       code: shaderCode,
-    }); 
+    });
   }
-  
+
   async createRenderPipeline() {
     this._renderPipeline = this._device.createRenderPipeline({
       label: "Render Pipeline " + this.getName(),
@@ -94,7 +94,7 @@ export default class Standard2DPGAPosedVertexColorObject extends SceneObject {
           format: this._canvasFormat   // the target canvas format
         }]
       }
-    }); 
+    });
     // Creata a bind group to pass the pose buffer
     this._bindGroup = this._device.createBindGroup({
       label: "Render Bind Group " + this.getName(),
@@ -107,7 +107,7 @@ export default class Standard2DPGAPosedVertexColorObject extends SceneObject {
       ],
     });
   }
-  
+
   render(pass) {
     // add to render pass to draw the object
     pass.setPipeline(this._renderPipeline);      // which render pipeline to use
@@ -115,8 +115,8 @@ export default class Standard2DPGAPosedVertexColorObject extends SceneObject {
     pass.setBindGroup(0, this._bindGroup);       // bind the pose buffer
     pass.draw(this._vertices.length / 6);        // number of vertices to draw
   }
-  
-  async createComputePipeline() {}
-  
-  compute(pass) {}
+
+  async createComputePipeline() { }
+
+  compute(pass) { }
 }
