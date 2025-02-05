@@ -62,7 +62,7 @@ async function init() {
   await renderer.init();
 
   // Create a background
-  await renderer.appendSceneObject(new Standard2DFullScreenObject(renderer._device, renderer._canvasFormat, "/assets/Space.jpg"));
+  await renderer.appendSceneObject(new Standard2DFullScreenObject(renderer._device, renderer._canvasFormat, "/assets/galaxy.jpeg"));
 
   // Modify the canvas size
   const devicePixelRatio = window.devicePixelRatio || 1;
