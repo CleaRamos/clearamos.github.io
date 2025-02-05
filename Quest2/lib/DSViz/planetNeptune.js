@@ -1,5 +1,5 @@
 //worked on the logic of making the circle with Jackson Rubiano
-import Standard2DPGAPosedVertexColorObject from "/lib/DSViz/Standard2DPGAPosedVertexColorObject.js"
+import Standard2DPGAPosedVertexColorObject from "./Standard2DPGAPosedVertexColorObject.js"
 export default class planetNeptune extends Standard2DPGAPosedVertexColorObject {
 
 

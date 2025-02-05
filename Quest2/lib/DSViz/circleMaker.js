@@ -33,7 +33,7 @@ export default function circleMaker(r, g, b, radius, centerx, centery) {
         vertices[idx * 18 + 16] = (b / 255);
         vertices[idx * 18 + 17] = (1);
 
-        i += 360.0 / 100
+        i += 360.0 / triangles
         idx = idx + 1;
 
     }
