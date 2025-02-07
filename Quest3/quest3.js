@@ -46,7 +46,9 @@ async function init() {
     -0.5, -0.5,
     0.5, -0.5,
     0.5, 0.5,
+
     -0.5, 0.5,
+    0.5, 0.5,
     -0.5, -0.5 // loop back to the first vertex
   ]);
   const camera = new Camera();
@@ -113,27 +115,36 @@ async function init() {
   canvasTag.addEventListener('mousedown', (e) => {
     var mouseX = (e.clientX / window.innerWidth) * 2 - 1;
     var mouseY = (-e.clientY / window.innerHeight) * 2 + 1;
-    mouseX /= camera._pose[4];
+    mouseX /= camera._pose[4]; //translating normal coordinate - reverse camera pose getting back to camera coordinate
     mouseY /= camera._pose[5];
     let p = PGA2D.applyMotorToPoint([mouseX, mouseY], [camera._pose[0], camera._pose[1], camera._pose[2], camera._pose[3]]);
+    //this would just be a shallow coppy - only want to set the old value to the value of p, not the object --> just get a deep copy of the value
     oldP = [...p];
     p[0] /= pose[4];
     p[1] /= pose[5];
+    //constantly updating pose
     let sp = PGA2D.applyMotorToPoint(p, PGA2D.reverse([pose[0], pose[1], pose[2], pose[3]]));
     if (-1 <= sp[0] && sp[0] <= 1 && -1 <= sp[1] && sp[1] <= 1) {
       isDragging = true;
     }
   });
+  //dirty effect to improve efficiency - every time update - copy from CPU to GPU
+  //save efficiency here
+  //how smooth for it to update when youa re moving an object with a mouse
+  //only set when you really need t update
   canvasTag.addEventListener('mousemove', (e) => {
     var mouseX = (e.clientX / window.innerWidth) * 2 - 1;
     var mouseY = (-e.clientY / window.innerHeight) * 2 + 1;
     mouseX /= camera._pose[4];
     mouseY /= camera._pose[5];
     let p = PGA2D.applyMotorToPoint([mouseX, mouseY], [camera._pose[0], camera._pose[1], camera._pose[2], camera._pose[3]]);
+    //compute the closest uV - determinate if mouse is in UC - compute the closest one
     let halfLength = 1; // half cell length
     let cellLength = halfLength * 2; // full cell length
     let u = Math.floor((p[0] + halfLength) / cellLength * 10);
     let v = Math.floor((p[1] + halfLength) / cellLength * 10);
+    //checking what cell your mouse is closest to
+    //treat mouse as an offwet -  and 
     if (u >= 0 && u < 10 && v >= 0 && v < 10) {
       let offsetX = - halfLength + u / 10 * cellLength + cellLength / 10 * 0.5;
       let offsetY = - halfLength + v / 10 * cellLength + cellLength / 10 * 0.5;

@@ -30,6 +30,7 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
     this._cameraPose = cameraPose;
     if (typeof this._vertices === Float32Array) this._vertices = vertices;
     else this._vertices = new Float32Array(vertices);
+    this._gridSize = 2048;
   }
 
   async createGeometry() {
@@ -60,7 +61,16 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
     // Copy from CPU to GPU
     this._device.queue.writeBuffer(this._cameraPoseBuffer, 0, this._cameraPose);
     // an array of cell statuses in CPU
-    this._cellStatus = new Uint32Array(2048 * 2048);
+    this._cellStatus = new Uint32Array(this._gridSize * this._gridSize);
+    // this._cellStatus[10] = 1;
+    // this._cellStatus[11] = 1;
+    // this._cellStatus[12] = 1;
+
+
+    for (let i = 0; i < this._cellStatus.length; i++) {
+      this._cellStatus[i] = Math.round(Math.random())
+    }
+
     //this is the number of cells that updates
 
     // Create a storage ping-pong-buffer to hold the cell status.
@@ -131,9 +141,9 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
           format: this._canvasFormat   // the target canvas format
         }]
       },
-      primitive: {                     // instead of drawing triangles
-        topology: 'line-strip'         // draw line strip
-      }
+      // primitive: {                     // instead of drawing triangles
+      //   topology: 'line-strip'         // draw line strip
+      // }
     });
     // create bind group to bind the uniform buffer
     this._bindGroups = [
@@ -175,7 +185,7 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
     pass.setPipeline(this._renderPipeline);      // which render pipeline to use
     pass.setVertexBuffer(0, this._vertexBuffer); // how the buffer are binded
     pass.setBindGroup(0, this._bindGroups[this._step % 2]);       // bind the uniform buffer
-    pass.draw(this._vertices.length / 2, 2048 * 2048);  // number of vertices to draw and number of instances to draw (100 here)
+    pass.draw(this._vertices.length / 2, this._gridSize * this._gridSize);  // number of vertices to draw and number of instances to draw (100 here)
   }
 
   async createComputePipeline() {
@@ -185,7 +195,7 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
       layout: this._pipelineLayout,
       compute: {
         module: this._shaderModule,
-        entryPoint: "computeMain",
+        entryPoint: "computeLife",
       }
     });
   }
@@ -194,7 +204,7 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
     // add to compute pass
     pass.setPipeline(this._computePipeline);
     pass.setBindGroup(0, this._bindGroups[this._step % 2]);     // bind the uniform buffer
-    pass.dispatchWorkgroups(Math.ceil(2048 / 4), Math.ceil(2048 / 4)); // sending how many instances to compute for each work group
+    pass.dispatchWorkgroups(Math.ceil(this._gridSize / 4), Math.ceil(this._gridSize / 4)); // sending how many instances to compute for each work group
     ++this._step;
   }
 }
