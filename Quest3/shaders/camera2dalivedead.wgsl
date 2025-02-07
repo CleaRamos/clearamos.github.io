@@ -21,7 +21,7 @@
  *                                anything the license permits.
  */
 
-const gridSize = 2048;
+const gridSize = 256;
 // struct to store a multi vector
 struct MultiVector {
   s: f32,
@@ -99,7 +99,23 @@ fn vertexMain(@location(0) pos: vec2f, @builtin(instance_index) idx: u32) -> Ver
 
 @fragment // this compute the color of each pixel
 fn fragmentMain(@location(0) cellStatus: f32) -> @location(0) vec4f {
-  return vec4f(238.f/255, 118.f/255, 35.f/255, 1) * cellStatus; // (R, G, B, A)
+
+  if (cellStatus== 0){  //dead
+      return vec4f(0.f/255, 0.f/255, 0.f/255, 1); // (R, G, B, A)
+  }
+  else if (cellStatus== 1){// alive
+       return vec4f(238.f/255, 118.f/255, 35.f/255, 1); // (R, G, B, A)
+  }
+   
+  else if (cellStatus== 2){//always alive
+       return vec4f(0.f/255, 200.f/255, 0.f/255, 1); // (R, G, B, A)
+  }
+  else if (cellStatus== 3){//always alive
+       return vec4f(0.f/255, 0.f/255, 200.f/255, 1); // (R, G, B, A)
+  }
+  else { // always dead
+       return vec4f(0.f/255, 0.f/255, 0.f/255, 1); // (R, G, B, A)
+  }
 }
 
 @compute
@@ -133,16 +149,23 @@ fn computeLife(@builtin(global_invocation_id) cell: vec3u) {
 
   let i = y * gridSize + x;
   // Compute new status  
-  if ((neighborsAlive) < 2) {
-    cellStatusOut[i] = 0;
-  }
-  else if ((neighborsAlive) > 3) {
-    cellStatusOut[i] = 0;
-  }
-  else if ((neighborsAlive) == 3) {
-    cellStatusOut[i] = 1;
-  }
-  else if ((neighborsAlive) == 2) {
+  if (cellStatusOut[i] >= 2){
     cellStatusOut[i] = cellStatusIn[i];
+  
   }
+  else {
+      if ((neighborsAlive) < 2) {
+      cellStatusOut[i] = 0;
+    }
+    else if ((neighborsAlive) > 3) {
+      cellStatusOut[i] = 0;
+    }
+    else if ((neighborsAlive) == 3) {
+      cellStatusOut[i] = 1;
+    }
+    else if ((neighborsAlive) == 2) {
+      cellStatusOut[i] = cellStatusIn[i];
+    }
+  }
+
 }

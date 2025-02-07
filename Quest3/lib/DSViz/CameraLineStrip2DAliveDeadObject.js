@@ -30,7 +30,7 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
     this._cameraPose = cameraPose;
     if (typeof this._vertices === Float32Array) this._vertices = vertices;
     else this._vertices = new Float32Array(vertices);
-    this._gridSize = 2048;
+    this._gridSize = 256;
   }
 
   async createGeometry() {
@@ -62,14 +62,27 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
     this._device.queue.writeBuffer(this._cameraPoseBuffer, 0, this._cameraPose);
     // an array of cell statuses in CPU
     this._cellStatus = new Uint32Array(this._gridSize * this._gridSize);
-    // this._cellStatus[10] = 1;
-    // this._cellStatus[11] = 1;
-    // this._cellStatus[12] = 1;
 
 
+
+    //randomize the number of alive cells at the start
     for (let i = 0; i < this._cellStatus.length; i++) {
-      this._cellStatus[i] = Math.round(Math.random())
+      let randomNum = Math.random()
+      if (randomNum < 0.01) {
+        this._cellStatus[i] = 2;
+      }
+      else if (randomNum < 0.02) {
+        this._cellStatus[i] = 3;
+      }
+      else if (randomNum < 0.51) {
+        this._cellStatus[i] = 1;
+      }
+      else {
+        this._cellStatus[i] = 0;
+      }
     }
+
+    //
 
     //this is the number of cells that updates
 
