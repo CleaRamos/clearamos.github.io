@@ -21,7 +21,7 @@
  *                                anything the license permits.
  */
 
-import SceneObject from "/lib/DSViz/SceneObject.js"
+import SceneObject from "/Quest3/lib/DSViz/SceneObject.js"
 
 export default class CameraLineStrip2DGridObject extends SceneObject {
   constructor(device, canvasFormat, cameraPose, vertices) {
