@@ -30,7 +30,8 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
     this._cameraPose = cameraPose;
     if (typeof this._vertices === Float32Array) this._vertices = vertices;
     else this._vertices = new Float32Array(vertices);
-    this._gridSize = 256;
+    this._gridSize = 2048;
+    this._paused = false;
   }
 
   async createGeometry() {
@@ -68,13 +69,13 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
     //randomize the number of alive cells at the start
     for (let i = 0; i < this._cellStatus.length; i++) {
       let randomNum = Math.random()
-      if (randomNum < 0.01) {
+      if (randomNum < 0.015) {
         this._cellStatus[i] = 2;
       }
-      else if (randomNum < 0.02) {
+      else if (randomNum < 0.03) {
         this._cellStatus[i] = 3;
       }
-      else if (randomNum < 0.51) {
+      else if (randomNum < 0.65) {
         this._cellStatus[i] = 1;
       }
       else {
@@ -154,9 +155,9 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
           format: this._canvasFormat   // the target canvas format
         }]
       },
-      // primitive: {                     // instead of drawing triangles
-      //   topology: 'line-strip'         // draw line strip
-      // }
+      primitive: {                     // instead of drawing triangles
+        // topology: 'line-strip'         // draw line strip
+      }
     });
     // create bind group to bind the uniform buffer
     this._bindGroups = [
@@ -191,9 +192,17 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
         }],
       })
     ];
+
+  }
+
+  updatePausedState() {
+    this._paused != this._paused;
   }
 
   render(pass) {
+    if (this._paused) {
+      return;
+    }
     // add to render pass to draw the object
     pass.setPipeline(this._renderPipeline);      // which render pipeline to use
     pass.setVertexBuffer(0, this._vertexBuffer); // how the buffer are binded
@@ -215,6 +224,10 @@ export default class CameraLineStrip2DAliveDeadObject extends SceneObject {
 
   compute(pass) {
     // add to compute pass
+
+    if (this._paused) {
+      return;
+    }
     pass.setPipeline(this._computePipeline);
     pass.setBindGroup(0, this._bindGroups[this._step % 2]);     // bind the uniform buffer
     pass.dispatchWorkgroups(Math.ceil(this._gridSize / 4), Math.ceil(this._gridSize / 4)); // sending how many instances to compute for each work group

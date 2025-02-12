@@ -34,44 +34,68 @@ import PGA2D from '/lib/Math/PGA2D.js'
 import Standard2DPGACameraSceneObject from '/lib/DSViz/Standard2DPGACameraSceneObject.js'
 
 async function init() {
+  const size = 256;
+
   // Create a canvas tag
   const canvasTag = document.createElement('canvas');
   canvasTag.id = "renderCanvas";
   document.body.appendChild(canvasTag);
+
+  // Modify the canvas size
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const width = window.innerWidth * devicePixelRatio;
+  const height = window.innerHeight * devicePixelRatio;
+  canvasTag.width = width;
+  canvasTag.height = height;
+
   // Create a 2d animated renderer
   const renderer = new Renderer(canvasTag);
   await renderer.init();
+
   var vertices = new Float32Array([
     // x, y
-    -0.5, -0.5,
-    0.5, -0.5,
-    0.5, 0.5,
+    // -0.5, -0.5,
+    // 0.5, -0.5,
+    // 0.5, 0.5,
 
-    -0.5, 0.5,
-    0.5, 0.5,
-    -0.5, -0.5 // loop back to the first vertex
+    // -0.5, 0.5,
+    // 0.5, 0.5,
+    // -0.5, -0.5 // loop back to the first vertex
+    -1, -1,
+    1, -1,
+    1, 1,
+
+    -1, 1,
+    1, 1,
+    -1, -1 // loop back to the first vertex
   ]);
   const camera = new Camera();
   const grid = new CameraLineStrip2DAliveDeadObject(renderer._device, renderer._canvasFormat, camera._pose, vertices);
+
   await renderer.appendSceneObject(grid);
+
   // Add a movable colored quad
-  var pose = new Float32Array([1, 0, 0, 0, 0.025, 0.025]);
-  var quadVertices = new Float32Array([
-    // x, y, r, g, b, a
-    -1, -1, 1, 0, 0, 1,
-    1, -1, 0, 1, 0, 1,
-    -1, 1, 0, 0, 1, 1,
-    1, 1, 1, 0, 1, 1,
-    -1, 1, 0, 0, 1, 1,
-    1, -1, 0, 1, 0, 1
-  ]);
-  const quad = new Standard2DPGACameraSceneObject(renderer._device, renderer._canvasFormat, camera._pose, quadVertices, pose);
-  await renderer.appendSceneObject(quad);
+  // var pose = new Float32Array([1, 0, 0, 0, 0.025, 0.025]);
+  // var quadVertices = new Float32Array([
+  //   // x, y, r, g, b, a
+  //   -1, -1, 1, 0, 0, 1,
+  //   1, -1, 0, 1, 0, 1,
+  //   -1, 1, 0, 0, 1, 1,
+  //   1, 1, 1, 0, 1, 1,
+  //   -1, 1, 0, 0, 1, 1,
+  //   1, -1, 0, 1, 0, 1
+  // ]);
+
+  // const quad = new Standard2DPGACameraSceneObject(renderer._device, renderer._canvasFormat, camera._pose, quadVertices, pose);
+  // await renderer.appendSceneObject(quad);
+
+
   let fps = '??';
-  var fpsText = new StandardTextObject('fps: ' + fps + '\n zoom In: q/Q' + '');
-  var instrText = new StandardTextObject('text test');
-  instrText.setPosition("bottom")
+  var fpsText = new StandardTextObject('fps: ' + fps);
+  var instrText = new StandardTextObject('zoom in: q/Q \nzoom out:z/Z \nmove: AWSD \npause:p/P');
+  instrText.setPosition("bottom");
   // var zoomIn = new StandardTextObject('zoom In: q/Q');
+
   // keyboard interaction
   var movespeed = 0.05;
   window.addEventListener("keydown", (e) => {
@@ -107,18 +131,45 @@ async function init() {
         quad.updateCameraPose();
         break;
       case 'f': case 'F': fpsText.toggleVisibility(); break;
+      case 'p': case 'P': grid.updatePausedState(); break;
     }
   });
   // mouse interactions
   let isDragging = false;
   let oldP = [0, 0];
   canvasTag.addEventListener('mousedown', (e) => {
+
     var mouseX = (e.clientX / window.innerWidth) * 2 - 1;
     var mouseY = (-e.clientY / window.innerHeight) * 2 + 1;
     mouseX /= camera._pose[4]; //translating normal coordinate - reverse camera pose getting back to camera coordinate
     mouseY /= camera._pose[5];
     let p = PGA2D.applyMotorToPoint([mouseX, mouseY], [camera._pose[0], camera._pose[1], camera._pose[2], camera._pose[3]]);
     //this would just be a shallow coppy - only want to set the old value to the value of p, not the object --> just get a deep copy of the value
+
+    //finds the mouse position
+    let halfLength = 1; // half cell length
+    let cellLength = halfLength; // full cell length
+    let u = Math.floor((p[0] + halfLength) / cellLength * size) - size / 2;
+    let v = Math.floor((p[1] + halfLength) / cellLength * size) - size / 2;
+    //checking what cell your mouse is closest to
+    //treat mouse as an offwet -  and 
+    //console.log(`TEST (${u}, ${v})`);
+
+    if (u >= 0 && u < size && v >= 0 && v < size) {
+      console.log(`clicks TEST: (${u}, ${v})`);
+
+      let offsetX = - halfLength + u / size * cellLength + cellLength / size * 0.5;
+      let offsetY = - halfLength + v / size * cellLength + cellLength / size * 0.5;
+      // if (-0.5 / size + offsetX <= p[0] && p[0] <= 0.5 / size + offsetX && -0.5 / size + offsetY <= p[1] && p[1] <= 0.5 / size + offsetY) {
+      //   //console.log(`in cell (${u}, ${v})`);
+      // }
+
+      //get the cell based on coordinate
+      let idx = u % size + v * size; // we are expecting 10x10, so modulo gridSize to get the x index
+
+
+    }
+
     oldP = [...p];
     p[0] /= pose[4];
     p[1] /= pose[5];
@@ -127,7 +178,11 @@ async function init() {
     if (-1 <= sp[0] && sp[0] <= 1 && -1 <= sp[1] && sp[1] <= 1) {
       isDragging = true;
     }
+
+
+
   });
+
   //dirty effect to improve efficiency - every time update - copy from CPU to GPU
   //save efficiency here
   //how smooth for it to update when youa re moving an object with a mouse
@@ -140,17 +195,21 @@ async function init() {
     let p = PGA2D.applyMotorToPoint([mouseX, mouseY], [camera._pose[0], camera._pose[1], camera._pose[2], camera._pose[3]]);
     //compute the closest uV - determinate if mouse is in UC - compute the closest one
     let halfLength = 1; // half cell length
-    let cellLength = halfLength * 2; // full cell length
-    let u = Math.floor((p[0] + halfLength) / cellLength * 10);
-    let v = Math.floor((p[1] + halfLength) / cellLength * 10);
+    let cellLength = halfLength; // full cell length
+    let u = Math.floor((p[0] + halfLength) / cellLength * size) - size / 2;
+    let v = Math.floor((p[1] + halfLength) / cellLength * size) - size / 2;
     //checking what cell your mouse is closest to
     //treat mouse as an offwet -  and 
-    if (u >= 0 && u < 10 && v >= 0 && v < 10) {
-      let offsetX = - halfLength + u / 10 * cellLength + cellLength / 10 * 0.5;
-      let offsetY = - halfLength + v / 10 * cellLength + cellLength / 10 * 0.5;
-      if (-0.5 / 10 + offsetX <= p[0] && p[0] <= 0.5 / 10 + offsetX && -0.5 / 10 + offsetY <= p[1] && p[1] <= 0.5 / 10 + offsetY) {
-        console.log(`in cell (${u}, ${v})`);
-      }
+    // console.log(`in cell TEsT (${u}, ${v})`);
+    if (u >= 0 && u < size && v >= 0 && v < size) {
+      console.log(`in cell TEsT (${u}, ${v})`);
+
+      let offsetX = - halfLength + u / size * cellLength + cellLength / size * 0.5;
+      let offsetY = - halfLength + v / size * cellLength + cellLength / size * 0.5;
+      //IDK what this does ^^^already gets acurate ish poisition
+      // if (-0.5 / size + offsetX <= p[0] && p[0] <= 0.5 / size + offsetX && -0.5 / size + offsetY <= p[1] && p[1] <= 0.5 / size + offsetY) {
+      //   console.log(`in cell (${u}, ${v})`);
+      // }
     }
     if (isDragging) {
       let diff = Math.sqrt(Math.pow(p[0] - oldP[0], 2) + Math.pow(p[1] - oldP[1], 2));
@@ -187,7 +246,7 @@ async function init() {
   lastCalled = Date.now();
   renderFrame();
   setInterval(() => {
-    fpsText.updateText('fps: ' + frameCnt + '\nzoom In: q/Q');
+    fpsText.updateText('fps: ' + frameCnt);
     frameCnt = 0;
   }, 1000); // call every 1000 ms
   return renderer;

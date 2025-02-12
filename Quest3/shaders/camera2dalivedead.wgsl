@@ -21,7 +21,7 @@
  *                                anything the license permits.
  */
 
-const gridSize = 256;
+const gridSize = 2048;
 // struct to store a multi vector
 struct MultiVector {
   s: f32,
@@ -83,7 +83,7 @@ fn vertexMain(@location(0) pos: vec2f, @builtin(instance_index) idx: u32) -> Ver
   let u = idx % gridSize; // we are expecting 10x10, so modulo gridSize to get the x index
   let v = idx / gridSize; // divide by 10 to get the y index
   let uv = vec2f(f32(u), f32(v)) / gridSize; // normalize the coordinates to [0, 1]
-  let halfLength = 0.5f; // half cell length
+  let halfLength = 1.0f; // half cell length
   let cellLength = halfLength * 2.f; // full cell length
   let cell = pos / gridSize; // divide the input quad into 10x10 pieces
   let offset = - halfLength + uv * cellLength + cellLength / gridSize * 0.5; // compute the offset for the instance
@@ -104,14 +104,14 @@ fn fragmentMain(@location(0) cellStatus: f32) -> @location(0) vec4f {
       return vec4f(0.f/255, 0.f/255, 0.f/255, 1); // (R, G, B, A)
   }
   else if (cellStatus== 1){// alive
-       return vec4f(238.f/255, 118.f/255, 35.f/255, 1); // (R, G, B, A)
+       return vec4f(253.f/255, 180.f/255, 0.f/255, 1); // (R, G, B, A)
   }
    
-  else if (cellStatus== 2){//always alive
-       return vec4f(0.f/255, 200.f/255, 0.f/255, 1); // (R, G, B, A)
+  else if (cellStatus== 2){//always DEAD
+       return vec4f(200.f/255, 0.f/255, 0.f/255, 1); // (R, G, B, A)
   }
-  else if (cellStatus== 3){//always alive
-       return vec4f(0.f/255, 0.f/255, 200.f/255, 1); // (R, G, B, A)
+  else if (cellStatus== 3){//always ALIVE
+       return vec4f(0.f/255, 200.f/255, 0.f/255, 1); // (R, G, B, A)
   }
   else { // always dead
        return vec4f(0.f/255, 0.f/255, 0.f/255, 1); // (R, G, B, A)
@@ -142,9 +142,9 @@ fn computeLife(@builtin(global_invocation_id) cell: vec3u) {
   // First count how many neighbors are alive
   let x = cell.x;
   let y = cell.y;
-  let neighborsAlive = cellStatusIn[(y) * gridSize + (x + 1)] + cellStatusIn[(y) * gridSize + (x - 1)] +
-  cellStatusIn[(y + 1) * gridSize + (x)] + cellStatusIn[(y - 1) * gridSize + (x)] + 
-  cellStatusIn[(y + 1) * gridSize + (x + 1)] + cellStatusIn[(y+1) * gridSize + (x - 1)] + cellStatusIn[(y - 1) * gridSize + (x + 1)] + cellStatusIn[(y - 1) * gridSize + (x - 1)];
+  let neighborsAlive = cellStatusIn[(y) * gridSize + (x + 1)]%2 + cellStatusIn[(y) * gridSize + (x - 1)]%2 +
+  cellStatusIn[(y + 1) * gridSize + (x)]%2 + cellStatusIn[(y - 1) * gridSize + (x)]%2 + 
+  cellStatusIn[(y + 1) * gridSize + (x + 1)]%2 + cellStatusIn[(y+1) * gridSize + (x - 1)]%2 + cellStatusIn[(y - 1) * gridSize + (x + 1)]%2 + cellStatusIn[(y - 1) * gridSize + (x - 1)]%2;
   // let neighborsAlive = cellStatusIn[(y) * gridSize + (x + 1)] + cellStatusIn[(y) * gridSize + (x - 1)] + cellStatusIn[(y + 1) * gridSize + (x)] + cellStatusIn[(y - 1) * gridSize + (x)];
 
   let i = y * gridSize + x;
