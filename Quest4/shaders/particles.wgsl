@@ -22,20 +22,23 @@
  */
 
 // TODO 3: Define a struct to store a particle
+
+
 struct Particle {
-  p: vec2f,
-  ip: vec2f,
-  v: vec2f,
+  p: vec2f, //p: current particle position
+  ip: vec2f, //p: initial particle position
+  v: vec2f, //p: velocity 
+  ls: f32, //lifespan
+  lsi: f32 //initial ls
   
   
 };
 
 // TODO 4: Write the bind group spells here using array<Particle>
 // name the binded variables particlesIn and particlesOut
-//NOT SURE IF THIS IS CORRECT
+
 @group(0) @binding(0) var<storage> particlesIn: array<Particle>;
 @group(0) @binding(1) var<storage,read_write> particlesOut: array<Particle>;
-
 
 // //random num generatior - need offset: particle location - use tahat as an offset for random location
 // fn rand(offset:32) -> f32(
@@ -45,14 +48,15 @@ struct Particle {
 @vertex
 fn vertexMain(@builtin(instance_index) idx: u32, @builtin(vertex_index) vIdx: u32) -> @builtin(position) vec4f {
   // TODO 5: Revise the vertex shader to draw circle to visualize the particles
+
   let particle = particlesIn[idx].p;
-  let size = 0.0125;
+  let size = 0.0125 * particlesIn[idx].ls/ 255;
   let pi = 3.14159265;
   let theta = 2. * pi / 8 * f32(vIdx);
   let x = cos(theta) * size;
   let y = sin(theta) * size;
   return vec4f(vec2f(x + particle[0], y + particle[1]), 0, 1);
-  
+ 
   // return vec4f(0, 0, 0, 1);
 }
 
@@ -75,7 +79,19 @@ fn computeMain(@builtin(global_invocation_id) global_id: vec3u) {
     //$$newPos = oldPos + velocity$$
     particlesOut[idx].p = particlesIn[idx].p + particlesIn[idx].v;
 
+    //reduce the lifespan by 1 and check if it is zero
+
+    if (particlesIn[idx].ls <0) || ((particlesIn[idx].p[0] > 1) || (particlesIn[idx].p[0] < -1)){
+       particlesOut[idx].p = particlesIn[idx].ip;
+       particlesOut[idx].ls = particlesOut[idx].lsi;
+    }
+    else {
+      particlesOut[idx].ls = particlesIn[idx].ls-1;
+    }
+   
     
     // TOOD 7: Add boundary checking and respawn the particle when it is offscreen
+   
+
   }
 }

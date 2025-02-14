@@ -70,17 +70,25 @@ export default class ParticleSystemObject extends SceneObject {
   }
 
   resetParticles() {
+    let numAttrs = 8;
+
     for (let i = 0; i < this._numParticles; ++i) {
+      let randLifespan = Math.random() * (255); //in frames
       // random position between [-1, 1] x [-1, 1]
-      this._particles[6 * i + 0] = (Math.random() * 2 - 1); // [-1, 1] 
-      this._particles[6 * i + 1] = (Math.random() * 2 - 1);
+      this._particles[numAttrs * i + 0] = (Math.random() * 2 - 1); // [-1, 1] 
+      this._particles[numAttrs * i + 1] = (Math.random() * 2 - 1);
       // store the initial positions
-      this._particles[6 * i + 2] = this._particles[6 * i + 0];
-      this._particles[6 * i + 3] = this._particles[6 * i + 1];
+      this._particles[numAttrs * i + 2] = this._particles[numAttrs * i + 0];
+      this._particles[numAttrs * i + 3] = this._particles[numAttrs * i + 1];
 
       // TODO 6: update the velocity
-      this._particles[6 * i + 4] = 0.001;
-      this._particles[6 * i + 5] = 0.001;
+      // this._particles[numAttrs] * i + 4] = 0.005;
+      // this._particles[numAttrs] * i + 5] = 0.005;
+      this._particles[numAttrs * i + 4] = Math.random() * (0.025) - 0.0125;
+      this._particles[numAttrs * i + 5] = Math.random() * (0.025) - 0.0125;
+
+      this._particles[numAttrs * i + 6] = randLifespan;
+      this._particles[numAttrs * i + 7] = randLifespan;
     }
     // Copy from CPU to GPU
     this._step = 0;
