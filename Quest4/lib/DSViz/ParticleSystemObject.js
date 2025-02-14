@@ -70,7 +70,7 @@ export default class ParticleSystemObject extends SceneObject {
   }
 
   resetParticles() {
-    let numAttrs = 8;
+    let numAttrs = 10;
 
     for (let i = 0; i < this._numParticles; ++i) {
       let randLifespan = Math.random() * (255); //in frames
@@ -82,13 +82,21 @@ export default class ParticleSystemObject extends SceneObject {
       this._particles[numAttrs * i + 3] = this._particles[numAttrs * i + 1];
 
       // TODO 6: update the velocity
-      // this._particles[numAttrs] * i + 4] = 0.005;
-      // this._particles[numAttrs] * i + 5] = 0.005;
+      this._particles[numAttrs * i + 4] = 0.000;
+      // this._particles[numAttrs * i + 5] = 0.000;
       this._particles[numAttrs * i + 4] = Math.random() * (0.025) - 0.0125;
       this._particles[numAttrs * i + 5] = Math.random() * (0.025) - 0.0125;
 
-      this._particles[numAttrs * i + 6] = randLifespan;
+
+      this._particles[numAttrs * i + 6] = randLifespan; 0
       this._particles[numAttrs * i + 7] = randLifespan;
+
+      this._particles[numAttrs * i + 8] = this._particles[numAttrs * i + 4]
+      this._particles[numAttrs * i + 9] = this._particles[numAttrs * i + 5]
+
+
+
+
     }
     // Copy from CPU to GPU
     this._step = 0;

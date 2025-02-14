@@ -29,7 +29,9 @@ struct Particle {
   ip: vec2f, //p: initial particle position
   v: vec2f, //p: velocity 
   ls: f32, //lifespan
-  lsi: f32 //initial ls
+  lsi: f32, //initial ls
+  vi: vec2f// initial velocity
+  
   
   
 };
@@ -75,18 +77,46 @@ fn computeMain(@builtin(global_invocation_id) global_id: vec3u) {
 
   
   if (idx < arrayLength(&particlesIn)) {
+
     particlesOut[idx] = particlesIn[idx];
+
     //$$newPos = oldPos + velocity$$
     particlesOut[idx].p = particlesIn[idx].p + particlesIn[idx].v;
 
-    //reduce the lifespan by 1 and check if it is zero
+    //new positioning with velociity
+    // oldVec = newVec + gravity
+    particlesOut[idx].v.y = particlesIn[idx].v.y + (-9.8*(1/6000.0));//
+   // particlesOut[idx].v.y = particlesIn[idx].v.y + (-0.5);
 
-    if (particlesIn[idx].ls <0) || ((particlesIn[idx].p[0] > 1) || (particlesIn[idx].p[0] < -1)){
-       particlesOut[idx].p = particlesIn[idx].ip;
-       particlesOut[idx].ls = particlesOut[idx].lsi;
+
+    //reduce the lifespan by 1 and check if it is zero
+    // if (particlesOut[idx].ls <0) || ((particlesOut[idx].p > 1) || (particlesOut[idx].p < -1)){
+
+       //particlesOut[idx].p = particlesIn[idx].ip; --> regenerate in the same position it started in
+       
+
+    //Circular regeneration across canvas
+    if (particlesOut[idx].p.x > 1) || (particlesOut[idx].p.x < -1){
+      particlesOut[idx].p.x = -particlesIn[idx].p.x;
+      particlesOut[idx].ls = particlesOut[idx].lsi;   //lifespan
+      particlesOut[idx].v = particlesOut[idx].vi;  //velocity
+    
     }
-    else {
-      particlesOut[idx].ls = particlesIn[idx].ls-1;
+    else if (particlesOut[idx].p.y > 1) || (particlesOut[idx].p.y < -1){
+      particlesOut[idx].p.y = -particlesIn[idx].p.y;
+      particlesOut[idx].ls = particlesOut[idx].lsi;   //lifespan
+      particlesOut[idx].v = particlesOut[idx].vi;  //velocity
+    }
+    else if (particlesOut[idx].ls <0) { 
+      //factory reset particle
+      particlesOut[idx].p = particlesIn[idx].ip; //position
+      particlesOut[idx].ls = particlesOut[idx].lsi;   //lifespan
+      particlesOut[idx].v = particlesOut[idx].vi;  //velocity
+
+
+    }
+    else{ //decrease lifespan
+        particlesOut[idx].ls = particlesIn[idx].ls-1;
     }
    
     

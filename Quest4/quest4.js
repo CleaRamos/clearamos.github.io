@@ -36,16 +36,16 @@ async function init() {
   canvasTag.id = "renderCanvas";
   document.body.appendChild(canvasTag);
 
-  
+
 
   // Create a 2d animated renderer
   const renderer = new Renderer(canvasTag);
   await renderer.init();
-  const particles = new ParticleSystemObject(renderer._device, renderer._canvasFormat);
+  const particles = new ParticleSystemObject(renderer._device, renderer._canvasFormat, 10000);
   await renderer.appendSceneObject(particles);
   let fps = '??';
   var fpsText = new StandardTextObject('fps: ' + fps);
-  
+
   // run animation at 60 fps
   var frameCnt = 0;
   var tgtFPS = 60;
@@ -63,16 +63,16 @@ async function init() {
   };
   lastCalled = Date.now();
   renderFrame();
-  setInterval(() => { 
+  setInterval(() => {
     fpsText.updateText('fps: ' + frameCnt);
     frameCnt = 0;
   }, 1000); // call every 1000 ms
   return renderer;
 }
 
-init().then( ret => {
+init().then(ret => {
   console.log(ret);
-}).catch( error => {
+}).catch(error => {
   const pTag = document.createElement('p');
   pTag.innerHTML = navigator.userAgent + "</br>" + error.message;
   document.body.appendChild(pTag);
