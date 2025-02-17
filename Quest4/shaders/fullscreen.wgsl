@@ -28,10 +28,14 @@ struct VertexOutput {
 
 @vertex
 fn vertexMain(@builtin(vertex_index) vIdx: u32) -> VertexOutput {
+
+  //the screen goes from -1,-1 to 1,1
   var pos = array<vec2f, 6>(
     vec2f(-1, -1), vec2f(1, -1), vec2f(-1, 1),
     vec2f(1, -1), vec2f(1, 1), vec2f(-1, 1)
   );
+
+  //but the texture coeds go from 0,0 to 1,1 - EXAM QUESTON
   var texCoords = array<vec2f, 6>(
     vec2f(0, 1), vec2f(1, 1), vec2f(0, 0),
     vec2f(1, 1), vec2f(1, 0), vec2f(0, 0)

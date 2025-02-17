@@ -36,11 +36,22 @@ struct Particle {
   
 };
 
+struct VertexOutput {
+  @builtin(position) pos: vec4<f32>,
+  @location(0) dist: f32,
+
+};
+
+
+
+
 // TODO 4: Write the bind group spells here using array<Particle>
 // name the binded variables particlesIn and particlesOut
 
 @group(0) @binding(0) var<storage> particlesIn: array<Particle>;
 @group(0) @binding(1) var<storage,read_write> particlesOut: array<Particle>;
+@group(0) @binding(2) var inTexture: texture_2d<f32>;
+@group(0) @binding(3) var inSampler: sampler;
 
 // //random num generatior - need offset: particle location - use tahat as an offset for random location
 // fn rand(offset:32) -> f32(
@@ -48,33 +59,96 @@ struct Particle {
 // )
 
 @vertex
-fn vertexMain(@builtin(instance_index) idx: u32, @builtin(vertex_index) vIdx: u32) -> @builtin(position) vec4f {
+fn vertexMain(@builtin(instance_index) idx: u32, @builtin(vertex_index) vIdx: u32) -> VertexOutput {
   // TODO 5: Revise the vertex shader to draw circle to visualize the particles
-
   let particle = particlesIn[idx].p;
-  let size = 0.0125 * particlesIn[idx].ls/ 255;
+  var dist = length(particle - (-1)) * 1024; // address this for your flame height
+  if (dist > 255) {
+      dist = 255;
+  }
+
+  //let size = 0.0125 * (255 - dist) / 255;
+  
+  let size = 0.0125 * particlesIn[idx].ls/ 255; //radius
   let pi = 3.14159265;
   let theta = 2. * pi / 8 * f32(vIdx);
   let x = cos(theta) * size;
   let y = sin(theta) * size;
-  return vec4f(vec2f(x + particle[0], y + particle[1]), 0, 1);
+  //return vec4f(vec2f(x + particle[0], y + particle[1]), 0, 1);
+
+  // scale the full screen canvas to the size of the particle
+  // let r = size;
+  // let xOffset = particle.x;
+  // let yOffset= particle.y;
+
+  // var pos = array<vec2f, 6>(
+  //   vec2f(-r +xOffset, -r+yOffset), vec2f(r+xOffset, -r+yOffset), vec2f(-r+xOffset, r+yOffset),
+  //   vec2f(r+xOffset, -r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(-r+xOffset, r+yOffset)
+  // );
+
+  //   var texCoords = array<vec2f, 6>(
+  //   vec2f(xOffset, r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(xOffset, yOffset),
+  //   vec2f(r+xOffset, r+yOffset), vec2f(r+xOffset, yOffset), vec2f(xOffset, yOffset)
+  // );
+  
+
+  var out: VertexOutput;
+  out.pos =vec4f(vec2f(x + particle[0], y + particle[1]), 0.0, 1.0);
+  out.dist = out.pos.y;
+  return out;
  
-  // return vec4f(0, 0, 0, 1);
+
 }
+
+
 
 //can create an interpolation of colors between distances - going vvetween orange yellow and red based on distance
 @fragment
-fn fragmentMain() -> @location(0) vec4f {
-  return vec4f(238.f/255, 118.f/255, 35.f/255, 1); // (R, G, B, A)
+fn fragmentMain(@location(0) dist: f32) -> @location(0) vec4f{
+  //scale down texture to
+  //return textureSample(inTexture, inSampler, texCoords);
+  // return vec4f(248.f/255, 24.f/255, 160.f/255, 1); // (R, G, B, A)
+
+ 
+  let center = vec4f(253./255,207./255,88./255, 1.);
+  let mid = vec4f(242./255,125./255,12./255, 1.);
+  let edge = vec4f(128./255,9./255,9./255, 1.);
+  // dist is between 0 and 255
+  if (dist > 0) {
+    let t = dist;
+      return edge * t + mid * (1 - t);
+  }
+  else {
+    let t = -dist;
+      return center * t + mid * (1 - t);
+  }
+  
+
+
+
 }
+
+
+// @fragment
+// fn fragmentMain(@location(0) dist: f32) -> @location(0) vec4f {
+//   let center = vec4f(253./255,207./255,88./255, 1.);
+//   let mid = vec4f(242./255,125./255,12./255, 1.);
+//   let edge = vec4f(128./255,9./255,9./255, 1.);
+//   // dist is between 0 and 255
+//   if (dist > 128.) {
+//   let t = (dist - 128.) / (255. - 128.);
+//     return edge * t + mid * (1 - t);
+//   }
+//   else {
+//   let t = (128. - dist) / 128.;
+//     return center * t + mid * (1 - t);
+//   }
+// }
 
 @compute @workgroup_size(256)
 fn computeMain(@builtin(global_invocation_id) global_id: vec3u) {
   // TODO 6: Revise the compute shader to update the particles using the velocity
   let idx = global_id.x;
-
-  
-
   
   if (idx < arrayLength(&particlesIn)) {
 

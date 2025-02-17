@@ -75,6 +75,7 @@ export default class Standard2DFullScreenObject extends SceneObject {
         }]
       }
     });
+    
     // Create bind group to bind the texture
     this._bindGroup = this._device.createBindGroup({
       layout: this._renderPipeline.getBindGroupLayout(0),

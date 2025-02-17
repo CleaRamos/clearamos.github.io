@@ -24,14 +24,34 @@
 import SceneObject from '/lib/DSViz/SceneObject.js'
 
 export default class ParticleSystemObject extends SceneObject {
-  constructor(device, canvasFormat, numParticles = 4096) {
+  constructor(device, canvasFormat, numParticles = 4096, img) {
     super(device, canvasFormat);
     this._numParticles = numParticles;
     this._step = 0;
+    this._img = new Image();
+    this._img.src = img;
   }
 
   async createGeometry() {
+    await this._img.decode();
+    this._bitmap = await createImageBitmap(this._img);
+    // Create texture buffer to store the texture in GPU
+    this._texture = this._device.createTexture({
+      label: "Texture " + this.getName(),
+      size: [this._bitmap.width, this._bitmap.height, 1],
+      format: "rgba8unorm",
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+    // Copy from CPU to GPU
+    this._device.queue.copyExternalImageToTexture({ source: this._bitmap }, { texture: this._texture }, [this._bitmap.width, this._bitmap.height]);
+    // Create the texture sampler
+    this._sampler = this._device.createSampler({
+      magFilter: "linear",
+      minFilter: "linear"
+    });
+
     await this.createParticleGeometry();
+
   }
 
   async createParticleGeometry() {
@@ -84,6 +104,8 @@ export default class ParticleSystemObject extends SceneObject {
       // TODO 6: update the velocity
       this._particles[numAttrs * i + 4] = 0.000;
       // this._particles[numAttrs * i + 5] = 0.000;
+      // this._particles[numAttrs * i + 4] = Math.random() * (0.05) - 0.025;
+      // this._particles[numAttrs * i + 5] = Math.random() * (0.05) - 0.025;
       this._particles[numAttrs * i + 4] = Math.random() * (0.025) - 0.0125;
       this._particles[numAttrs * i + 5] = Math.random() * (0.025) - 0.0125;
 
@@ -128,7 +150,18 @@ export default class ParticleSystemObject extends SceneObject {
         binding: 0,
         visibility: GPUShaderStage.VERTEX | GPUShaderStage.COMPUTE,
         buffer: { type: "read-only-storage" } // input read only
+      }, {
+        binding: 2,
+        visibility: GPUShaderStage.FRAGMENT,
+        texture: {}
+      }, {
+        binding: 3,
+        visibility: GPUShaderStage.FRAGMENT,
+        sampler: {}
       }
+
+
+
       ]
     });
 
@@ -151,6 +184,8 @@ export default class ParticleSystemObject extends SceneObject {
     console.log("HERE4");
   }
 
+
+
   async createParticlePipeline() {
     this._particlePipeline = this._device.createRenderPipeline({
       label: "Particles Render Pipeline " + this.getName(),
@@ -159,11 +194,30 @@ export default class ParticleSystemObject extends SceneObject {
         module: this._shaderModule,
         entryPoint: "vertexMain",
       },
+      // fragment: {
+      //   module: this._shaderModule,
+      //   entryPoint: "fragmentMain",
+      //   targets: [{
+      //     format: this._canvasFormat
+      //   }]
+      // },
       fragment: {
         module: this._shaderModule,
         entryPoint: "fragmentMain",
         targets: [{
-          format: this._canvasFormat
+          format: this._canvasFormat,
+          blend: {
+            color: {
+              srcFactor: 'one',
+              dstFactor: 'one-minus-src-alpha',
+              operator: 'add',
+            },
+            alpha: {
+              srcFactor: 'one',
+              dstFactor: 'one-minus-src-alpha',
+              operator: 'add',
+            },
+          },
         }]
       },
       primitives: {
@@ -171,7 +225,7 @@ export default class ParticleSystemObject extends SceneObject {
       }
     });
     console.log("HERE5");
-    // Create bind group to bind the particle buffers
+    // Create bind group to bind the particle buffers - ping pong
     this._bindGroups = [
       this._device.createBindGroup({
         layout: this._particlePipeline.getBindGroupLayout(0),
@@ -183,6 +237,14 @@ export default class ParticleSystemObject extends SceneObject {
           {
             binding: 1,
             resource: { buffer: this._particleBuffers[1] }
+          },
+          {
+            binding: 2,
+            resource: this._texture.createView(),
+          },
+          {
+            binding: 3,
+            resource: this._sampler,
           }
         ],
       }),
@@ -196,6 +258,14 @@ export default class ParticleSystemObject extends SceneObject {
           {
             binding: 1,
             resource: { buffer: this._particleBuffers[0] }
+          },
+          {
+            binding: 2,
+            resource: this._texture.createView(),
+          },
+          {
+            binding: 3,
+            resource: this._sampler,
           }
         ],
       })
