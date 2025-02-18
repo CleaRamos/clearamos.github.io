@@ -30,6 +30,8 @@ import Renderer from '/lib/Viz/2DRenderer.js'
 import ParticleSystemObject from '/lib/DSViz/ParticleSystemObject.js'
 import StandardTextObject from '/lib/DSViz/StandardTextObject.js'
 
+
+
 async function init() {
   // Create a canvas tag
   const canvasTag = document.createElement('canvas');
@@ -41,8 +43,26 @@ async function init() {
   // Create a 2d animated renderer
   const renderer = new Renderer(canvasTag);
   await renderer.init();
-  const particles = new ParticleSystemObject(renderer._device, renderer._canvasFormat, 9000, "./assets/poop.png");
+
+
+  const particles = new ParticleSystemObject(renderer._device, renderer._canvasFormat, 50000, "./assets/thisIsFine.jpg");
   await renderer.appendSceneObject(particles);
+
+  const particles02 = new ParticleSystemObject(renderer._device, renderer._canvasFormat, 100000, "./assets/elmoFire.jpeg");
+  //await renderer.appendSceneObject(particles02);
+
+
+
+  window.addEventListener("keydown", (e) => {
+    switch (e.key) {
+      case 'ArrowUp': case 'e': case 'E': // want to switch the renderer
+        renderer.removeSceneObject(particles)
+        renderer.appendSceneObject(particles02);
+
+        break;
+    }
+  });
+
   let fps = '??';
   var fpsText = new StandardTextObject('fps: ' + fps);
 
@@ -61,6 +81,10 @@ async function init() {
     }
     requestAnimationFrame(renderFrame);
   };
+
+
+
+
   lastCalled = Date.now();
   renderFrame();
   setInterval(() => {

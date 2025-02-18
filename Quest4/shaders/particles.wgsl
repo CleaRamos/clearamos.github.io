@@ -39,6 +39,7 @@ struct Particle {
 struct VertexOutput {
   @builtin(position) pos: vec4<f32>,
   @location(0) dist: f32,
+  @location(1) texCoords: vec2f
 
 };
 
@@ -77,24 +78,37 @@ fn vertexMain(@builtin(instance_index) idx: u32, @builtin(vertex_index) vIdx: u3
   //return vec4f(vec2f(x + particle[0], y + particle[1]), 0, 1);
 
   // scale the full screen canvas to the size of the particle
-  // let r = size;
-  // let xOffset = particle.x;
-  // let yOffset= particle.y;
+  let r = size;
+  let xOffset = particle.x;
+  let yOffset= particle.y;
+
+  var pos = array<vec2f, 6>(
+  vec2f(-r +xOffset, -r+yOffset), vec2f(r+xOffset, -r+yOffset), vec2f(-r+xOffset, r+yOffset),
+  vec2f(r+xOffset, -r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(-r+xOffset, r+yOffset)
+  );
+
+  var texCoords = array<vec2f, 6>(
+  vec2f(xOffset, r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(xOffset, yOffset),
+  vec2f(r+xOffset, r+yOffset), vec2f(r+xOffset, yOffset), vec2f(xOffset, yOffset)
+  );
 
   // var pos = array<vec2f, 6>(
-  //   vec2f(-r +xOffset, -r+yOffset), vec2f(r+xOffset, -r+yOffset), vec2f(-r+xOffset, r+yOffset),
-  //   vec2f(r+xOffset, -r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(-r+xOffset, r+yOffset)
+  //   vec2f(-1, -1), vec2f(1, -1), vec2f(-1, 1),
+  //   vec2f(1, -1), vec2f(1, 1), vec2f(-1, 1)
   // );
 
-  //   var texCoords = array<vec2f, 6>(
-  //   vec2f(xOffset, r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(xOffset, yOffset),
-  //   vec2f(r+xOffset, r+yOffset), vec2f(r+xOffset, yOffset), vec2f(xOffset, yOffset)
+  // //but the texture coeds go from 0,0 to 1,1 - EXAM QUESTON
+  // var texCoords = array<vec2f, 6>(
+  //   vec2f(0, 1), vec2f(1, 1), vec2f(0, 0),
+  //   vec2f(1, 1), vec2f(1, 0), vec2f(0, 0)
   // );
   
 
   var out: VertexOutput;
   out.pos =vec4f(vec2f(x + particle[0], y + particle[1]), 0.0, 1.0);
+  //out.pos = vec4f(pos[vIdx], 0, 1);
   out.dist = out.pos.y;
+  out.texCoords = texCoords[vIdx];
   return out;
  
 
@@ -104,24 +118,27 @@ fn vertexMain(@builtin(instance_index) idx: u32, @builtin(vertex_index) vIdx: u3
 
 //can create an interpolation of colors between distances - going vvetween orange yellow and red based on distance
 @fragment
-fn fragmentMain(@location(0) dist: f32) -> @location(0) vec4f{
+fn fragmentMain(@location(0) dist: f32, @location(1) texCoords: vec2f) -> @location(0) vec4f{
   //scale down texture to
   //return textureSample(inTexture, inSampler, texCoords);
   // return vec4f(248.f/255, 24.f/255, 160.f/255, 1); // (R, G, B, A)
 
  
-  let center = vec4f(253./255,207./255,88./255, 1.);
-  let mid = vec4f(242./255,125./255,12./255, 1.);
-  let edge = vec4f(128./255,9./255,9./255, 1.);
-  // dist is between 0 and 255
-  if (dist > 0) {
-    let t = dist;
-      return edge * t + mid * (1 - t);
-  }
-  else {
-    let t = -dist;
-      return center * t + mid * (1 - t);
-  }
+  // let center = vec4f(253./255,207./255,88./255, 1.);
+  // let mid = vec4f(242./255,125./255,12./255, 1.);
+  // let edge = vec4f(128./255,9./255,9./255, 1.);
+  // // dist is between 0 and 255
+  // if (dist > 0) {
+  //   let t = dist;
+  //     return edge * t + mid * (1 - t);
+  // }
+  // else {
+  //   let t = -dist;
+  //     return center * t + mid * (1 - t);
+  // }
+
+  return textureSample(inTexture, inSampler, texCoords);
+
   
 
 

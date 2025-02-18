@@ -220,9 +220,9 @@ export default class ParticleSystemObject extends SceneObject {
           },
         }]
       },
-      primitives: {
-        typology: 'line-strip'
-      }
+      // primitives: {
+      //   typology: 'line-strip'
+      // }
     });
     console.log("HERE5");
     // Create bind group to bind the particle buffers - ping pong
