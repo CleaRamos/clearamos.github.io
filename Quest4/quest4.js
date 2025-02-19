@@ -45,7 +45,7 @@ async function init() {
   await renderer.init();
 
 
-  const particles = new ParticleSystemObject(renderer._device, renderer._canvasFormat, 50000, "./assets/thisIsFine.jpg");
+  const particles = new ParticleSystemObject(renderer._device, renderer._canvasFormat, 100000, "./assets/thisIsFine.jpg");
   await renderer.appendSceneObject(particles);
 
   const particles02 = new ParticleSystemObject(renderer._device, renderer._canvasFormat, 100000, "./assets/elmoFire.jpeg");

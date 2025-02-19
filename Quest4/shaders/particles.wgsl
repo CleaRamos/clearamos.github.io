@@ -79,13 +79,13 @@ fn vertexMain(@builtin(instance_index) idx: u32, @builtin(vertex_index) vIdx: u3
 
   // scale the full screen canvas to the size of the particle
   let r = size;
-  let xOffset = particle.x;
-  let yOffset= particle.y;
+  let xOffset =( particle.x+0.5)/2 +.25;
+  let yOffset= (particle.y +0.5)/2 +.25;
 
-  var pos = array<vec2f, 6>(
-  vec2f(-r +xOffset, -r+yOffset), vec2f(r+xOffset, -r+yOffset), vec2f(-r+xOffset, r+yOffset),
-  vec2f(r+xOffset, -r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(-r+xOffset, r+yOffset)
-  );
+  // var pos = array<vec2f, 6>(
+  // vec2f(-r +xOffset, -r+yOffset), vec2f(r+xOffset, -r+yOffset), vec2f(-r+xOffset, r+yOffset),
+  // vec2f(r+xOffset, -r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(-r+xOffset, r+yOffset)
+  // );
 
   var texCoords = array<vec2f, 6>(
   vec2f(xOffset, r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(xOffset, yOffset),
@@ -93,7 +93,7 @@ fn vertexMain(@builtin(instance_index) idx: u32, @builtin(vertex_index) vIdx: u3
   );
 
   // var pos = array<vec2f, 6>(
-  //   vec2f(-1, -1), vec2f(1, -1), vec2f(-1, 1),
+  //   vec2f(-1, -1), vec2f(1, -1), vec2f(-1, 1), 
   //   vec2f(1, -1), vec2f(1, 1), vec2f(-1, 1)
   // );
 
