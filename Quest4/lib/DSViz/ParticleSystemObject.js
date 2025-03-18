@@ -24,12 +24,14 @@
 import SceneObject from '/lib/DSViz/SceneObject.js'
 
 export default class ParticleSystemObject extends SceneObject {
-  constructor(device, canvasFormat, numParticles = 4096, img) {
+  constructor(device, canvasFormat, numParticles = 4096, mode, img) {
     super(device, canvasFormat);
     this._numParticles = numParticles;
     this._step = 0;
     this._img = new Image();
+    this._mode = mode;
     this._img.src = img;
+    
   }
 
   async createGeometry() {
@@ -187,12 +189,54 @@ export default class ParticleSystemObject extends SceneObject {
 
 
   async createParticlePipeline() {
-    this._particlePipeline = this._device.createRenderPipeline({
+
+   
+      
+    //Particle Pipleline for the image mapped particles = mode 1
+      this._particlePipeline = this._device.createRenderPipeline({
+        label: "Particles Render Pipeline " + this.getName(),
+        layout: this._pipelineLayout,
+        vertex: {
+          module: this._shaderModule,
+          entryPoint: "vertexMain",
+        },
+        // fragment: {
+        //   module: this._shaderModule,
+        //   entryPoint: "fragmentMain",
+        //   targets: [{
+        //     format: this._canvasFormat
+        //   }]
+        // },
+        fragment: {
+          module: this._shaderModule,
+          entryPoint: "fragmentMain",
+          targets: [{
+            format: this._canvasFormat,
+            blend: {
+              color: {
+                srcFactor: 'one',
+                dstFactor: 'one-minus-src-alpha',
+                operator: 'add',
+              },
+              alpha: {
+                srcFactor: 'one',
+                dstFactor: 'one-minus-src-alpha',
+                operator: 'add',
+              },
+            },
+          }]
+        },
+        // primitives: {
+        //   typology: 'line-strip'
+        // }
+      });
+    
+    this._particlePipeline02 = this._device.createRenderPipeline({
       label: "Particles Render Pipeline " + this.getName(),
       layout: this._pipelineLayout,
       vertex: {
         module: this._shaderModule,
-        entryPoint: "vertexMain",
+        entryPoint: "vertexMain02",
       },
       // fragment: {
       //   module: this._shaderModule,
@@ -203,7 +247,7 @@ export default class ParticleSystemObject extends SceneObject {
       // },
       fragment: {
         module: this._shaderModule,
-        entryPoint: "fragmentMain",
+        entryPoint: "fragmentMain02",
         targets: [{
           format: this._canvasFormat,
           blend: {
@@ -224,6 +268,48 @@ export default class ParticleSystemObject extends SceneObject {
       //   typology: 'line-strip'
       // }
     });
+
+    this._particlePipeline03 = this._device.createRenderPipeline({
+      label: "Particles Render Pipeline " + this.getName(),
+      layout: this._pipelineLayout,
+      vertex: {
+        module: this._shaderModule,
+        entryPoint: "vertexMain02",
+      },
+      // fragment: {
+      //   module: this._shaderModule,
+      //   entryPoint: "fragmentMain",
+      //   targets: [{
+      //     format: this._canvasFormat
+      //   }]
+      // },
+      fragment: {
+        module: this._shaderModule,
+        entryPoint: "fragmentMain03",
+        targets: [{
+          format: this._canvasFormat,
+          blend: {
+            color: {
+              srcFactor: 'one',
+              dstFactor: 'one-minus-src-alpha',
+              operator: 'add',
+            },
+            alpha: {
+              srcFactor: 'one',
+              dstFactor: 'one-minus-src-alpha',
+              operator: 'add',
+            },
+          },
+        }]
+      },
+      // primitives: {
+      //   typology: 'line-strip'
+      // }
+    });
+
+  
+
+
     console.log("HERE5");
     // Create bind group to bind the particle buffers - ping pong
     this._bindGroups = [
@@ -274,12 +360,27 @@ export default class ParticleSystemObject extends SceneObject {
   }
 
   render(pass) {
-    pass.setPipeline(this._particlePipeline);
+    if (this._mode == 1){
+      pass.setPipeline(this._particlePipeline);
+    }
+    else if (this._mode ==2){
+      pass.setPipeline(this._particlePipeline02);
+
+    }
+    else{
+      pass.setPipeline(this._particlePipeline03);
+
+    }
+
+
+
     pass.setBindGroup(0, this._bindGroups[this._step % 2]);
     pass.draw(128, this._numParticles);
   }
 
   async createComputePipeline() {
+
+
     this._computePipeline = this._device.createComputePipeline({
       label: "Particles Compute Pipeline " + this.getName(),
       layout: this._pipelineLayout,
@@ -288,13 +389,30 @@ export default class ParticleSystemObject extends SceneObject {
         entryPoint: "computeMain",
       }
     });
+
+    this._computePipeline02 = this._device.createComputePipeline({
+      label: "Particles Compute Pipeline " + this.getName(),
+      layout: this._pipelineLayout,
+      compute: {
+        module: this._shaderModule,
+        entryPoint: "computeMain02",
+      }
+    });
   }
 
   compute(pass) {
     //TODO: write hte current time to the time buffer - pass in a time, physial time 
     //this._device.queue.writeBuffer(this.timeBuffer,0, newFloat32Array({performance.now()/1000}));
+    if (this._mode == 1){
+      pass.setPipeline(this._computePipeline);
+    }
+    else{
+      pass.setPipeline(this._computePipeline02);
 
-    pass.setPipeline(this._computePipeline);
+    }
+    
+
+
     pass.setBindGroup(0, this._bindGroups[this._step % 2]);
     pass.dispatchWorkgroups(Math.ceil(this._numParticles / 256));
     ++this._step

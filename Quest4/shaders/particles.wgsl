@@ -79,9 +79,11 @@ fn vertexMain(@builtin(instance_index) idx: u32, @builtin(vertex_index) vIdx: u3
 
   // scale the full screen canvas to the size of the particle
   let r = size;
+  //making the size of the text coords - to fill the entire screen
   let xOffset =( particle.x+0.5)/2 +.25;
   let yOffset= (particle.y +0.5)/2 +.25;
 
+  //DOESN"T DO ANYTHING
   // var pos = array<vec2f, 6>(
   // vec2f(-r +xOffset, -r+yOffset), vec2f(r+xOffset, -r+yOffset), vec2f(-r+xOffset, r+yOffset),
   // vec2f(r+xOffset, -r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(-r+xOffset, r+yOffset)
@@ -146,6 +148,118 @@ fn fragmentMain(@location(0) dist: f32, @location(1) texCoords: vec2f) -> @locat
 }
 
 
+
+
+
+
+//SECOND VERTEX MAIN FOR FIRE BLENDING INTERPOLATION
+@vertex
+fn vertexMain02(@builtin(instance_index) idx: u32, @builtin(vertex_index) vIdx: u32) -> VertexOutput {
+  // TODO 5: Revise the vertex shader to draw circle to visualize the particles
+  let particle = particlesIn[idx].p;
+  var dist = length(particle - (-1)) * 1024; // address this for your flame height
+  if (dist > 255) {
+      dist = 255;
+  }
+
+  //let size = 0.0125 * (255 - dist) / 255;
+  
+  let size = 0.0125 * particlesIn[idx].ls/ 255; //radius
+  let pi = 3.14159265;
+  let theta = 2. * pi / 8 * f32(vIdx);
+  let x = cos(theta) * size;
+  let y = sin(theta) * size;
+  //return vec4f(vec2f(x + particle[0], y + particle[1]), 0, 1);
+
+  // scale the full screen canvas to the size of the particle
+  let r = size;
+  //making the size of the text coords - to fill the entire screen
+  let xOffset =( particle.x+0.5)/2 +.25;
+  let yOffset= (particle.y +0.5)/2 +.25;
+
+  //DOESN"T DO ANYTHING
+  // var pos = array<vec2f, 6>(
+  // vec2f(-r +xOffset, -r+yOffset), vec2f(r+xOffset, -r+yOffset), vec2f(-r+xOffset, r+yOffset),
+  // vec2f(r+xOffset, -r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(-r+xOffset, r+yOffset)
+  // );
+
+  var texCoords = array<vec2f, 6>(
+  vec2f(xOffset, r+yOffset), vec2f(r+xOffset, r+yOffset), vec2f(xOffset, yOffset),
+  vec2f(r+xOffset, r+yOffset), vec2f(r+xOffset, yOffset), vec2f(xOffset, yOffset)
+  );
+
+  // var pos = array<vec2f, 6>(
+  //   vec2f(-1, -1), vec2f(1, -1), vec2f(-1, 1), 
+  //   vec2f(1, -1), vec2f(1, 1), vec2f(-1, 1)
+  // );
+
+  // //but the texture coeds go from 0,0 to 1,1 - EXAM QUESTON
+  // var texCoords = array<vec2f, 6>(
+  //   vec2f(0, 1), vec2f(1, 1), vec2f(0, 0),
+  //   vec2f(1, 1), vec2f(1, 0), vec2f(0, 0)
+  // );
+  
+
+  var out: VertexOutput;
+  out.pos =vec4f(vec2f(x + particle[0], y + particle[1]), 0.0, 1.0);
+  //out.pos = vec4f(pos[vIdx], 0, 1);
+  out.dist = out.pos.y;
+  out.texCoords = texCoords[vIdx];
+  return out;
+ 
+
+}
+
+//SECOND FRAGMENT SHADER TO GET THE FIRE COLOR INTERPOLATION
+@fragment
+fn fragmentMain02(@location(0) dist: f32) -> @location(0) vec4f{
+  //scale down texture to
+  //return textureSample(inTexture, inSampler, texCoords);
+  // return vec4f(248.f/255, 24.f/255, 160.f/255, 1); // (R, G, B, A)
+
+  //yell
+  let center = vec4f(253./255,207./255,88./255, 1.);
+  //orange
+  let mid = vec4f(242./255,125./255,12./255, 1.);
+  //red
+  let edge = vec4f(128./255,9./255,9./255, 1.);
+  // dist is between -1 to 1
+  if (dist > 0) {
+    let t = dist;
+      return edge * pow(t, 0.5) + mid * (1 - (pow(t, 0.5)));
+  }
+  else {
+    let t = -dist;
+      return center * pow(t, 0.5) + mid * (1 - (pow(t, 0.5)));
+  }
+  
+}
+
+//SECOND FRAGMENT SHADER TO GET THE FIRE COLOR INTERPOLATION
+@fragment
+fn fragmentMain03(@location(0) dist: f32) -> @location(0) vec4f{
+  //scale down texture to
+  //return textureSample(inTexture, inSampler, texCoords);
+  // return vec4f(248.f/255, 24.f/255, 160.f/255, 1); // (R, G, B, A)
+
+  //yell
+  let center = vec4f(253./255,207./255,88./255, 1.);
+  //orange
+  let mid = vec4f(242./255,125./255,12./255, 1.);
+  //red
+  let edge = vec4f(128./255,9./255,9./255, 1.);
+  // dist is between -1 to 1
+  if (dist > 0) {
+    let t = dist;
+      return edge * t + mid * (1 - t);
+  }
+  else {
+    let t = -dist;
+      return center * t + mid * (1 - t);
+  }
+  
+}
+
 // @fragment
 // fn fragmentMain(@location(0) dist: f32) -> @location(0) vec4f {
 //   let center = vec4f(253./255,207./255,88./255, 1.);
@@ -161,6 +275,8 @@ fn fragmentMain(@location(0) dist: f32, @location(1) texCoords: vec2f) -> @locat
 //     return center * t + mid * (1 - t);
 //   }
 // }
+
+
 
 @compute @workgroup_size(256)
 fn computeMain(@builtin(global_invocation_id) global_id: vec3u) {
@@ -187,6 +303,87 @@ fn computeMain(@builtin(global_invocation_id) global_id: vec3u) {
        
 
     //Circular regeneration across canvas
+    // if (particlesOut[idx].p.x > 1) || (particlesOut[idx].p.x < -1){
+    //   particlesOut[idx].p.x = -particlesIn[idx].p.x;
+    //   particlesOut[idx].ls = particlesOut[idx].lsi;   //lifespan
+    //   particlesOut[idx].v = particlesOut[idx].vi;  //velocity
+    
+    // }
+    // else if (particlesOut[idx].p.y > 1) || (particlesOut[idx].p.y < -1){
+    //   particlesOut[idx].p.y = -particlesIn[idx].p.y;
+    //   particlesOut[idx].ls = particlesOut[idx].lsi;   //lifespan
+    //   particlesOut[idx].v = particlesOut[idx].vi;  //velocity
+    // }
+    // else if (particlesOut[idx].ls <0) { 
+    //   //factory reset particle
+    //   particlesOut[idx].p = particlesIn[idx].ip; //position
+    //   particlesOut[idx].ls = particlesOut[idx].lsi;   //lifespan
+    //   particlesOut[idx].v = particlesOut[idx].vi;  //velocity
+
+
+    // }
+    // else{ //decrease lifespan
+    //     particlesOut[idx].ls = particlesIn[idx].ls-1;
+    // }
+
+
+     if (particlesOut[idx].p.x > 1) || (particlesOut[idx].p.x < -1){
+      particlesOut[idx].p = particlesIn[idx].ip; //position
+      particlesOut[idx].ls = particlesOut[idx].lsi;   //lifespan
+      particlesOut[idx].v = particlesOut[idx].vi;  //velocity
+    
+    }
+    else if (particlesOut[idx].p.y > 1) || (particlesOut[idx].p.y < -1){
+      particlesOut[idx].p = particlesIn[idx].ip; //position
+      particlesOut[idx].ls = particlesOut[idx].lsi;   //lifespan
+      particlesOut[idx].v = particlesOut[idx].vi;  //velocity
+    }
+    else if (particlesOut[idx].ls <0) { 
+      //factory reset particle
+      particlesOut[idx].p = particlesIn[idx].ip; //position
+      particlesOut[idx].ls = particlesOut[idx].lsi;   //lifespan
+      particlesOut[idx].v = particlesOut[idx].vi;  //velocity
+
+
+    }
+    else{ //decrease lifespan
+        particlesOut[idx].ls = particlesIn[idx].ls-1;
+    }
+   
+    
+    // TOOD 7: Add boundary checking and respawn the particle when it is offscreen
+   
+
+  }
+}
+
+
+
+@compute @workgroup_size(256)
+fn computeMain02(@builtin(global_invocation_id) global_id: vec3u) {
+  // TODO 6: Revise the compute shader to update the particles using the velocity
+  let idx = global_id.x;
+  
+  if (idx < arrayLength(&particlesIn)) {
+
+    particlesOut[idx] = particlesIn[idx];
+
+    //$$newPos = oldPos + velocity$$
+    particlesOut[idx].p = particlesIn[idx].p + particlesIn[idx].v;
+
+    //new positioning with velociity
+    // oldVec = newVec + gravity
+    particlesOut[idx].v.y = particlesIn[idx].v.y + (-9.8*(1/6000.0));//
+   // particlesOut[idx].v.y = particlesIn[idx].v.y + (-0.5);
+
+
+    //reduce the lifespan by 1 and check if it is zero
+    // if (particlesOut[idx].ls <0) || ((particlesOut[idx].p > 1) || (particlesOut[idx].p < -1)){
+
+       //particlesOut[idx].p = particlesIn[idx].ip; --> regenerate in the same position it started in
+       
+
+    // Circular regeneration across canvas
     if (particlesOut[idx].p.x > 1) || (particlesOut[idx].p.x < -1){
       particlesOut[idx].p.x = -particlesIn[idx].p.x;
       particlesOut[idx].ls = particlesOut[idx].lsi;   //lifespan
@@ -209,6 +406,8 @@ fn computeMain(@builtin(global_invocation_id) global_id: vec3u) {
     else{ //decrease lifespan
         particlesOut[idx].ls = particlesIn[idx].ls-1;
     }
+
+
    
     
     // TOOD 7: Add boundary checking and respawn the particle when it is offscreen
