@@ -1,0 +1,6 @@
+In Quest4, Particles of FIRE, I created a particle system that are are effected by differnt attributes. 
+In one mode, I mapped a texture to all of the particles, so that together, while they are moving, they create a picture (picture of Elmo in fire, and a dog in a fire by toggling the "E" and "F" keys respectively). I generated 75000 particles for each of these modes and the particles fall down, effected by gravity.
+
+In another mode of my project, implemented a interpolated linear color distribution among particles that are falling (toggle the "I" key). The particles near the top of the canvas are red, and when they fall to the middle, they change color to orange, then, yellow at the bottom. This effect results in a gradient of colors from red, to orange, and yellow, mimicing a firey waterfall. When the colors hit the bottom, they are then circularly regenerated, creating a bubling effect at the bottom. 
+
+I also attempted a non-linear interpolated color distribution of with the same color pallete of particles (toggle the "R" key). The particles are still red near the top, but there is a more abrupt change in the middle from orange to yellow as instead of t, I set t^0.5 for a more drastic and non-linear change in color. 
