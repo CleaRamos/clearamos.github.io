@@ -51,7 +51,7 @@ async function init() {
   var fpsText = new StandardTextObject('fps: ' + fps);
 
   var dist = 0.05;
-  var rot_angle = 1;
+  var rot_angle = 5;
   
   // run animation at 60 fps
   var frameCnt = 0;
@@ -72,45 +72,82 @@ async function init() {
    //move in X direction
    window.addEventListener("keydown", (a) => {
     switch (a.key) {
-      case 'ArrowUp': case 'a': case 'A': // 
+      case 'a': case 'A': // 
         camera.moveX(dist) 
         tracerObj.updateCameraPose() 
         break;
-      case 'ArrowUp': case 'd': case 'D': // 
+      case 'd': case 'D': // 
         camera.moveX(-dist) 
         tracerObj.updateCameraPose() 
         break;
-      case 'ArrowUp': case 'w': case 'W': // 
+      case 'w': case 'W': // 
         camera.moveY(dist) 
         tracerObj.updateCameraPose() 
         break;
-        case 'ArrowUp': case 's': case 'W': // 
+        case 's': case 'W': // 
         camera.moveY(-dist) 
         tracerObj.updateCameraPose() 
         break;
-      case 'ArrowUp': case 'q': case 'Q': // 
+      case 'q': case 'Q': // 
         camera.moveZ(dist) 
         tracerObj.updateCameraPose() 
         break;
-      case 'ArrowUp': case 'e': case 'E': // 
+      case 'e': case 'E': // 
         camera.moveZ(-dist) 
         tracerObj.updateCameraPose() 
         break;
-      case 'ArrowUp': case 'j': case 'J': // 
+
+      case 'j': case 'J': // 
         camera.rotateX(rot_angle) 
         tracerObj.updateCameraPose() 
         break;
-      case 'ArrowUp': case 'l': case 'L': // 
+      case 'l': case 'L': // 
         camera.rotateX(-rot_angle) 
         tracerObj.updateCameraPose() 
         break;
-      case 'ArrowUp': case 'i': case 'i': // 
+      case 'i': case 'i': // 
         camera.rotateY(rot_angle) 
         tracerObj.updateCameraPose() 
         break;
-      case 'ArrowUp': case 'k': case 'K': // 
+      case 'k': case 'K': // 
         camera.rotateY(-rot_angle) 
         tracerObj.updateCameraPose() 
+        break;
+      case 'u': case 'U': // 
+        camera.rotateZ(rot_angle) 
+        tracerObj.updateCameraPose() 
+        break;
+      case 'o': case 'O': // 
+        camera.rotateZ(-rot_angle) 
+        tracerObj.updateCameraPose() 
+        break;
+
+
+      case 'v': case 'V': // 
+        tracerObj.rotateXObj(rot_angle) 
+
+        break;
+      case 'n': case 'N': // 
+        tracerObj.rotateXObj(-rot_angle) 
+
+        break;
+
+      case 'g': case 'G': // 
+        tracerObj.rotateYObj(rot_angle) 
+
+        break;
+      case 'b': case 'B': // 
+        tracerObj.rotateYObj(-rot_angle) 
+
+        break;
+
+      case 'f': case 'F': // 
+        tracerObj.rotateZObj(rot_angle) 
+
+        break;
+      case 'h': case 'H': // 
+        tracerObj.rotateZObj(-rot_angle) 
+       
         break;
       
     }

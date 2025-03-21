@@ -23,6 +23,8 @@
 
 import RayTracingObject from "/lib/DSViz/RayTracingObject.js"
 import UnitCube from "/lib/DS/UnitCube.js"
+import PGA3D from '/lib/Math/PGA3D.js'
+
 
 export default class RayTracingBoxObject extends RayTracingObject {
   constructor(device, canvasFormat, camera, showTexture = true) {
@@ -177,5 +179,57 @@ export default class RayTracingBoxObject extends RayTracingObject {
     }
     pass.setBindGroup(0, this._bindGroup);                  // bind the buffer
     pass.dispatchWorkgroups(Math.ceil(this._wgWidth / 16), Math.ceil(this._wgHeight / 16)); // dispatch
+  }
+
+  rotateXObj(d) {
+    // TODO: write code to rotate the camera along its x-axis
+    // Suggest to use PGA3D
+        let translation_d = PGA3D.applyMotorToPoint([0, 0, 0], this._box._pose)
+    
+    //gets rotation of camera and striaht up then just applies rotation
+    let rotation_d = PGA3D.applyMotorToDir([1, 0, 0], this._box._pose) 
+    let rotor = PGA3D.createRotor(d*(Math.PI/180.0), rotation_d[0], rotation_d[1], rotation_d[2]) //this._box._pose is the starting position
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._box._pose, rotor)
+    
+    console.log(newpose.map(val => val.toFixed(4))); 
+    this.updatePose(newpose)
+    this.updateBoxPose();
+  }
+
+  rotateYObj(d) {
+    // TODO: write code to rotate the camera along its x-axis
+    // Suggest to use PGA3D
+    let translation_d = PGA3D.applyMotorToPoint([0, 0, 0], this._box._pose)
+
+    //apply motor to align camera
+    let rotation_d = PGA3D.applyMotorToDir([0, 1, 0], this._box._pose)
+    let rotor = PGA3D.createRotor(d*(Math.PI/180.0), rotation_d[0], rotation_d[1], rotation_d[2])
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._box._pose, rotor)
+    
+    console.log(newpose.map(val => val.toFixed(4))); 
+    this.updatePose(newpose)
+    this.updateBoxPose();
+  }
+
+  rotateZObj(d) {
+    // TODO: write code to rotate the camera along its x-axis
+    // Suggest to use PGA3D
+    let translation_d = PGA3D.applyMotorToPoint([0, 0, 0], this._box._pose)
+
+    //apply motor to align camera
+    let rotation_d = PGA3D.applyMotorToDir([0, 0, 1], this._box._pose)
+    let rotor = PGA3D.createRotor(d*(Math.PI/180.0), rotation_d[0], rotation_d[1], rotation_d[2])
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._box._pose, rotor)
+    
+    console.log(newpose.map(val => val.toFixed(4))); 
+    this.updatePose(newpose)
+    this.updateBoxPose();
+  }
+
+  updatePose(newpose) {
+    for (let i = 0; i < 16; ++i) this._box._pose[i] = newpose[i];
   }
 }

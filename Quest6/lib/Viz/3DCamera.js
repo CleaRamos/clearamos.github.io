@@ -101,11 +101,12 @@ export default class Camera {
     this.updatePose(newpose);
   }
   
+  //ROTATE CAMERA
   rotateX(d) {
     // TODO: write code to rotate the camera along its x-axis
     // Suggest to use PGA3D
 
-    //apply motor to align camera
+    //apply motor to align camera - this allows camera to rotate
     let translation_d = PGA3D.applyMotorToPoint([0, 0, 0], this._pose)
 
     let rotation_d = PGA3D.applyMotorToDir([1, 0, 0], this._pose)
@@ -124,8 +125,8 @@ export default class Camera {
     // TODO: write code to rotate the camera along its y-axis
     // Suggest to use PGA3D
     
+    //apply motor to align camera - this allows camera to rotate
     let translation_d = PGA3D.applyMotorToPoint([0, 0, 0], this._pose)
-
     let rotation_d = PGA3D.applyMotorToDir([0, 1, 0], this._pose)
     let rotor = PGA3D.createRotor(d*(Math.PI/180.0), rotation_d[0], rotation_d[1], rotation_d[2], translation_d[0], translation_d[1], translation_d[2])
     //apply the translator to the camera pose
@@ -140,8 +141,8 @@ export default class Camera {
     // TODO: write code to rotate the camera along its z-axis
     // Suggest to use PGA3D
     
+    //apply motor to align camera - this allows camera to rotate
     let translation_d = PGA3D.applyMotorToPoint([0, 0, 0], this._pose)
-
     let rotation_d = PGA3D.applyMotorToDir([0, 0, 1], this._pose)
     let rotor = PGA3D.createRotor(d*(Math.PI/180.0), rotation_d[0], rotation_d[1], rotation_d[2], translation_d[0], translation_d[1], translation_d[2])
     //apply the translator to the camera pose
@@ -152,4 +153,7 @@ export default class Camera {
     
     this.updatePose(newpose);
   }
+
+
+ 
 }
