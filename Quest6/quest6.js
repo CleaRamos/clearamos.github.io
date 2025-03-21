@@ -51,6 +51,7 @@ async function init() {
   var fpsText = new StandardTextObject('fps: ' + fps);
 
   var dist = 0.05;
+  var rot_angle = 1;
   
   // run animation at 60 fps
   var frameCnt = 0;
@@ -93,6 +94,22 @@ async function init() {
         break;
       case 'ArrowUp': case 'e': case 'E': // 
         camera.moveZ(-dist) 
+        tracerObj.updateCameraPose() 
+        break;
+      case 'ArrowUp': case 'j': case 'J': // 
+        camera.rotateX(rot_angle) 
+        tracerObj.updateCameraPose() 
+        break;
+      case 'ArrowUp': case 'l': case 'L': // 
+        camera.rotateX(-rot_angle) 
+        tracerObj.updateCameraPose() 
+        break;
+      case 'ArrowUp': case 'i': case 'i': // 
+        camera.rotateY(rot_angle) 
+        tracerObj.updateCameraPose() 
+        break;
+      case 'ArrowUp': case 'k': case 'K': // 
+        camera.rotateY(-rot_angle) 
         tracerObj.updateCameraPose() 
         break;
       

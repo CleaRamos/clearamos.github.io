@@ -105,13 +105,15 @@ export default class Camera {
     // TODO: write code to rotate the camera along its x-axis
     // Suggest to use PGA3D
 
-    // //apply motor to align camera
-    // let rotation_d = PGA3D.applyMotorToPoint([0, 0, d], PGA3D.extractRotor(this._pose))
-    // //then translate based on the new alignement of camera
-    // let translator = PGA3D.createTranslator(rotation_d[0], rotation_d[1], rotation_d[2])
-    // //apply the translator to the camera pose
-    // let newpose = PGA3D.geometricProduct(this._pose, translator)
+    //apply motor to align camera
+    let translation_d = PGA3D.applyMotorToPoint([0, 0, 0], this._pose)
+
+    let rotation_d = PGA3D.applyMotorToDir([1, 0, 0], this._pose)
+    let rotor = PGA3D.createRotor(d*(Math.PI/180.0), rotation_d[0], rotation_d[1], rotation_d[2], translation_d[0], translation_d[1], translation_d[2])
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._pose, rotor)
     
+    console.log(newpose.map(val => val.toFixed(4))); 
 
     
     
@@ -122,7 +124,15 @@ export default class Camera {
     // TODO: write code to rotate the camera along its y-axis
     // Suggest to use PGA3D
     
+    let translation_d = PGA3D.applyMotorToPoint([0, 0, 0], this._pose)
+
+    let rotation_d = PGA3D.applyMotorToDir([0, 1, 0], this._pose)
+    let rotor = PGA3D.createRotor(d*(Math.PI/180.0), rotation_d[0], rotation_d[1], rotation_d[2], translation_d[0], translation_d[1], translation_d[2])
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._pose, rotor)
     
+    console.log(newpose.map(val => val.toFixed(4))); 
+
     this.updatePose(newpose);
   }
   
@@ -130,6 +140,15 @@ export default class Camera {
     // TODO: write code to rotate the camera along its z-axis
     // Suggest to use PGA3D
     
+    let translation_d = PGA3D.applyMotorToPoint([0, 0, 0], this._pose)
+
+    let rotation_d = PGA3D.applyMotorToDir([0, 0, 1], this._pose)
+    let rotor = PGA3D.createRotor(d*(Math.PI/180.0), rotation_d[0], rotation_d[1], rotation_d[2], translation_d[0], translation_d[1], translation_d[2])
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._pose, rotor)
+    
+    console.log(newpose.map(val => val.toFixed(4))); 
+
     
     this.updatePose(newpose);
   }
