@@ -73,27 +73,27 @@ async function init() {
    window.addEventListener("keydown", (a) => {
     switch (a.key) {
       case 'a': case 'A': // 
-        camera.moveX(dist) 
-        tracerObj.updateCameraPose() 
-        break;
-      case 'd': case 'D': // 
         camera.moveX(-dist) 
         tracerObj.updateCameraPose() 
         break;
-      case 'w': case 'W': // 
-        camera.moveY(dist) 
+      case 'd': case 'D': // 
+        camera.moveX(dist) 
         tracerObj.updateCameraPose() 
         break;
-        case 's': case 'W': // 
+      case 'w': case 'W': // 
         camera.moveY(-dist) 
         tracerObj.updateCameraPose() 
         break;
+        case 's': case 'W': // 
+        camera.moveY(dist) 
+        tracerObj.updateCameraPose() 
+        break;
       case 'q': case 'Q': // 
-        camera.moveZ(dist) 
+        camera.moveZ(-dist) 
         tracerObj.updateCameraPose() 
         break;
       case 'e': case 'E': // 
-        camera.moveZ(-dist) 
+        camera.moveZ(dist) 
         tracerObj.updateCameraPose() 
         break;
 
@@ -121,33 +121,52 @@ async function init() {
         camera.rotateZ(-rot_angle) 
         tracerObj.updateCameraPose() 
         break;
+//----------
 
+      case 'ArrowLeft': // 
+        tracerObj.moveXObj(-dist) 
 
+        break;
+      case 'ArrowRight': // 
+        tracerObj.moveXObj(dist) 
+
+        break;
+
+        case 'ArrowUp': // 
+        tracerObj.moveYObj(-dist) 
+
+        break;
+      case 'ArrowDown': // 
+        tracerObj.moveYObj(dist) 
+
+        break;
+      
+
+//----------
       case 'v': case 'V': // 
         tracerObj.rotateXObj(rot_angle) 
-
         break;
+
       case 'n': case 'N': // 
         tracerObj.rotateXObj(-rot_angle) 
-
         break;
+
 
       case 'g': case 'G': // 
         tracerObj.rotateYObj(rot_angle) 
-
         break;
+
       case 'b': case 'B': // 
         tracerObj.rotateYObj(-rot_angle) 
-
         break;
+
 
       case 'f': case 'F': // 
         tracerObj.rotateZObj(rot_angle) 
-
         break;
+      
       case 'h': case 'H': // 
         tracerObj.rotateZObj(-rot_angle) 
-       
         break;
       
     }

@@ -181,6 +181,51 @@ export default class RayTracingBoxObject extends RayTracingObject {
     pass.dispatchWorkgroups(Math.ceil(this._wgWidth / 16), Math.ceil(this._wgHeight / 16)); // dispatch
   }
 
+  moveXObj(d) {
+    // TODO: write code to move the camera in the x-direction
+    // Suggest to use PGA3D
+
+    //Create a translator 
+    let dt = PGA3D.createTranslator(d,0,0)
+    //apply the translator to the object
+    let newpose = PGA3D.geometricProduct(this._box._pose, dt)
+    console.log(newpose.map(val => val.toFixed(4))); 
+    
+    this.updatePose(newpose);
+    this.updateBoxPose();
+
+  }
+  
+  moveYObj(d) {
+    // TODO: write code to move the camera in the x-direction
+    // Suggest to use PGA3D
+
+    //Create a translator 
+    let dt = PGA3D.createTranslator(0,d,0)
+    //apply the translator to the object
+    let newpose = PGA3D.geometricProduct(this._box._pose, dt)
+    console.log(newpose.map(val => val.toFixed(4))); 
+    
+    this.updatePose(newpose);
+    this.updateBoxPose();
+
+  }
+  
+  moveZObj(d) {
+    // TODO: write code to move the camera in the x-direction
+    // Suggest to use PGA3D
+
+    //Create a translator 
+    let dt = PGA3D.createTranslator(0,0,d)
+    //apply the translator to the object
+    let newpose = PGA3D.geometricProduct(this._box._pose, dt)
+    console.log(newpose.map(val => val.toFixed(4))); 
+    
+    this.updatePose(newpose);
+    this.updateBoxPose();
+
+  }
+
   rotateXObj(d) {
     // TODO: write code to rotate the camera along its x-axis
     // Suggest to use PGA3D
@@ -208,7 +253,7 @@ export default class RayTracingBoxObject extends RayTracingObject {
     //apply the translator to the camera pose
     let newpose = PGA3D.geometricProduct(this._box._pose, rotor)
     
-    console.log(newpose.map(val => val.toFixed(4))); 
+    // console.log(newpose.map(val => val.toFixed(4))); 
     this.updatePose(newpose)
     this.updateBoxPose();
   }

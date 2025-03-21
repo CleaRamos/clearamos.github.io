@@ -100,6 +100,101 @@ export default class Camera {
     
     this.updatePose(newpose);
   }
+
+
+  moveX(d) {
+    // TODO: write code to move the camera in the x-direction
+    // Suggest to use PGA3D
+
+    //apply motor to align camera
+    let rotation_d = PGA3D.applyMotorToPoint([d, 0,0], PGA3D.extractRotor(this._pose))
+    //then translate based on the new alignement of camera
+    let translator = PGA3D.createTranslator(rotation_d[0], rotation_d[1], rotation_d[2])
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._pose, translator)
+
+    // console.log(newpose.map(val => val.toFixed(4))); 
+   
+  
+   
+    this.updatePose(newpose);
+  }
+  
+  moveY(d) {
+    // TODO: write code to move the camera in the y-direction
+    // Suggest to use PGA3D
+    //apply motor to align camera
+    let rotation_d = PGA3D.applyMotorToPoint([0, d, 0], PGA3D.extractRotor(this._pose))
+    //then translate based on the new alignement of camera
+    let translator = PGA3D.createTranslator(rotation_d[0], rotation_d[1], rotation_d[2])
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._pose, translator)
+
+    this.updatePose(newpose);
+  }
+  
+  moveZ(d) {
+    // TODO: write code to move the camera in the z-direction
+    // Suggest to use PGA3D
+
+     // TODO: write code to move the camera in the y-direction
+    // Suggest to use PGA3D
+    //apply motor to align camera
+    let rotation_d = PGA3D.applyMotorToPoint([0, 0, d], PGA3D.extractRotor(this._pose))
+    //then translate based on the new alignement of camera
+    let translator = PGA3D.createTranslator(rotation_d[0], rotation_d[1], rotation_d[2])
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._pose, translator)
+    
+    this.updatePose(newpose);
+  }
+
+  moveObjX(d) {
+    // TODO: write code to move the camera in the x-direction
+    // Suggest to use PGA3D
+
+    //apply motor to align camera
+    let rotation_d = PGA3D.applyMotorToPoint([d, 0,0], PGA3D.extractRotor(this._pose))
+    //then translate based on the new alignement of camera
+    let translator = PGA3D.createTranslator(rotation_d[0], rotation_d[1], rotation_d[2])
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._pose, translator)
+
+    // console.log(newpose.map(val => val.toFixed(4))); 
+   
+  
+   
+    this.updatePose(newpose);
+  }
+  
+  moveObjY(d) {
+    // TODO: write code to move the camera in the y-direction
+    // Suggest to use PGA3D
+    //apply motor to align camera
+    let rotation_d = PGA3D.applyMotorToPoint([0, d, 0], PGA3D.extractRotor(this._pose))
+    //then translate based on the new alignement of camera
+    let translator = PGA3D.createTranslator(rotation_d[0], rotation_d[1], rotation_d[2])
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._pose, translator)
+
+    this.updatePose(newpose);
+  }
+  
+  moveObjZ(d) {
+    // TODO: write code to move the camera in the z-direction
+    // Suggest to use PGA3D
+
+     // TODO: write code to move the camera in the y-direction
+    // Suggest to use PGA3D
+    //apply motor to align camera
+    let rotation_d = PGA3D.applyMotorToPoint([0, 0, d], PGA3D.extractRotor(this._pose))
+    //then translate based on the new alignement of camera
+    let translator = PGA3D.createTranslator(rotation_d[0], rotation_d[1], rotation_d[2])
+    //apply the translator to the camera pose
+    let newpose = PGA3D.geometricProduct(this._pose, translator)
+    
+    this.updatePose(newpose);
+  }
   
   //ROTATE CAMERA
   rotateX(d) {
@@ -114,10 +209,8 @@ export default class Camera {
     //apply the translator to the camera pose
     let newpose = PGA3D.geometricProduct(this._pose, rotor)
     
-    console.log(newpose.map(val => val.toFixed(4))); 
+    // console.log(newpose.map(val => val.toFixed(4))); 
 
-    
-    
     this.updatePose(newpose);
   }
   
