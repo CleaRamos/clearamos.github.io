@@ -30,6 +30,8 @@ import RayTracer from '/lib/Viz/RayTracer.js'
 import StandardTextObject from '/lib/DSViz/StandardTextObject.js'
 import RayTracingBoxObject from '/lib/DSViz/RayTracingBoxObject.js'
 import Camera from '/lib/Viz/3DCamera.js'
+import PGA3D from '/lib/Math/PGA3D.js'
+
 
 async function init() {
   // Create a canvas tag
@@ -47,6 +49,8 @@ async function init() {
   
   let fps = '??';
   var fpsText = new StandardTextObject('fps: ' + fps);
+
+  var dist = 0.05;
   
   // run animation at 60 fps
   var frameCnt = 0;
@@ -63,6 +67,40 @@ async function init() {
     }
     requestAnimationFrame(renderFrame);
   };
+
+   //move in X direction
+   window.addEventListener("keydown", (a) => {
+    switch (a.key) {
+      case 'ArrowUp': case 'a': case 'A': // 
+        camera.moveX(dist) 
+        tracerObj.updateCameraPose() 
+        break;
+      case 'ArrowUp': case 'd': case 'D': // 
+        camera.moveX(-dist) 
+        tracerObj.updateCameraPose() 
+        break;
+      case 'ArrowUp': case 'w': case 'W': // 
+        camera.moveY(dist) 
+        tracerObj.updateCameraPose() 
+        break;
+        case 'ArrowUp': case 's': case 'W': // 
+        camera.moveY(-dist) 
+        tracerObj.updateCameraPose() 
+        break;
+      case 'ArrowUp': case 'q': case 'Q': // 
+        camera.moveZ(dist) 
+        tracerObj.updateCameraPose() 
+        break;
+      case 'ArrowUp': case 'e': case 'E': // 
+        camera.moveZ(-dist) 
+        tracerObj.updateCameraPose() 
+        break;
+      
+    }
+  });
+ 
+
+
   lastCalled = Date.now();
   renderFrame();
   setInterval(() => { 
@@ -70,13 +108,19 @@ async function init() {
     frameCnt = 0;
   }, 1000); // call every 1000 ms
   return tracer;
+  
+ 
+
 }
 
-init().then( ret => {
-  console.log(ret);
-}).catch( error => {
-  const pTag = document.createElement('p');
-  pTag.innerHTML = navigator.userAgent + "</br>" + error.message;
-  document.body.appendChild(pTag);
-  document.getElementById("renderCanvas").remove();
-});
+
+
+
+    init().then( ret => {
+      console.log(ret);
+    }).catch( error => {
+      const pTag = document.createElement('p');
+      pTag.innerHTML = navigator.userAgent + "</br>" + error.message;
+      document.body.appendChild(pTag);
+      document.getElementById("renderCanvas").remove();
+    });``
