@@ -48,10 +48,15 @@ async function init() {
   await tracer.setTracerObject(tracerObj);
   
   let fps = '??';
+  var instrText = new StandardTextObject('Press the following keys toggle each mode: \nADSWQE: Move Camera \nJLKIUO: Rotate Camera \nArrow Keys/12: Move Object \nVBNFHM: Rotate Object \n0: Orthogonal Camera \n9: Projective Camera \n[]: decrease/increase focal length');
   var fpsText = new StandardTextObject('fps: ' + fps);
+  instrText.setPosition("bottom");
 
   var dist = 0.05;
   var rot_angle = 5;
+  var focal = 1.0;
+  var focal_change = 1.0;;
+
   
   // run animation at 60 fps
   var frameCnt = 0;
@@ -72,6 +77,7 @@ async function init() {
    //move in X direction
    window.addEventListener("keydown", (a) => {
     switch (a.key) {
+//---------- Move Camera
       case 'a': case 'A': // 
         camera.moveX(-dist) 
         tracerObj.updateCameraPose() 
@@ -96,21 +102,21 @@ async function init() {
         camera.moveZ(dist) 
         tracerObj.updateCameraPose() 
         break;
-
+//---------- Rotate Camera
       case 'j': case 'J': // 
-        camera.rotateX(rot_angle) 
-        tracerObj.updateCameraPose() 
-        break;
-      case 'l': case 'L': // 
-        camera.rotateX(-rot_angle) 
-        tracerObj.updateCameraPose() 
-        break;
-      case 'i': case 'i': // 
         camera.rotateY(rot_angle) 
         tracerObj.updateCameraPose() 
         break;
-      case 'k': case 'K': // 
+      case 'l': case 'L': // 
         camera.rotateY(-rot_angle) 
+        tracerObj.updateCameraPose() 
+        break;
+      case 'i': case 'i': // 
+        camera.rotateX(rot_angle) 
+        tracerObj.updateCameraPose() 
+        break;
+      case 'k': case 'K': // 
+        camera.rotateX(-rot_angle) 
         tracerObj.updateCameraPose() 
         break;
       case 'u': case 'U': // 
@@ -121,54 +127,65 @@ async function init() {
         camera.rotateZ(-rot_angle) 
         tracerObj.updateCameraPose() 
         break;
-//----------
-
+//---------- Move Object
       case 'ArrowLeft': // 
         tracerObj.moveXObj(-dist) 
-
         break;
       case 'ArrowRight': // 
         tracerObj.moveXObj(dist) 
-
         break;
-
-        case 'ArrowUp': // 
+      case 'ArrowUp': // 
         tracerObj.moveYObj(-dist) 
-
         break;
       case 'ArrowDown': // 
         tracerObj.moveYObj(dist) 
-
         break;
-      
-
-//----------
+      case '1': // 
+        tracerObj.moveYObj(-dist) 
+        break;
+      case '2': // 
+        tracerObj.moveYObj(dist) 
+        break;
+//---------- Rotate Object
       case 'v': case 'V': // 
         tracerObj.rotateXObj(rot_angle) 
         break;
-
       case 'n': case 'N': // 
         tracerObj.rotateXObj(-rot_angle) 
         break;
-
-
       case 'g': case 'G': // 
         tracerObj.rotateYObj(rot_angle) 
         break;
-
       case 'b': case 'B': // 
         tracerObj.rotateYObj(-rot_angle) 
         break;
-
-
       case 'f': case 'F': // 
         tracerObj.rotateZObj(rot_angle) 
         break;
-      
       case 'h': case 'H': // 
         tracerObj.rotateZObj(-rot_angle) 
         break;
-      
+//---------- Change camera Mode
+      case '0': // orthogonal
+        camera._isProjective = false;
+        break;
+      case '9': // orthogonal
+        camera._isProjective = true;
+        break;
+//---------- Change camera focal
+      case '[': // decrease
+        if (camera._focal[0]>1.0){
+          camera._focal[0] -= focal_change;
+          camera._focal[1] -= focal_change;
+        }
+        tracerObj.updateCameraFocal();
+        break;
+
+      case ']': // increase
+          camera._focal[0] += focal_change;
+          camera._focal[1] += focal_change;
+        tracerObj.updateCameraFocal();
+        break;
     }
   });
  

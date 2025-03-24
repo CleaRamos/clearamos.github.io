@@ -433,6 +433,31 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
 fn computeProjectiveMain(@builtin(global_invocation_id) global_id: vec3u) {
   // TODO: write code to generate projection camera ray and trace the ray to assign the pixel color
   // This should be very similar to the orthogonal one above
-  
+
+   // get the pixel coordiantes
+  let uv = vec2i(global_id.xy);
+  let texDim = vec2i(textureDimensions(outTexture));
+  if (uv.x < texDim.x && uv.y < texDim.y) {
+    // compute the pixel size
+    let psize = (vec2f(2, 2) / cameraPose.res.xy)* cameraPose.focal.xy;
+
+
+
+    // project camera ray sent from the origin
+    var spt = vec3f(0,0,0);
+    //passing through pixel center
+    var rdir = normalize(vec3f((f32(uv.x) + 0.5) * psize.x - cameraPose.focal.x, (f32(uv.y) + 0.5) * psize.y - cameraPose.focal.y, 1));
+   
+   //normalize ray direction??
+
+   // apply transformation
+    spt = transformPt(spt);
+    rdir = transformDir(rdir);
+    // compute the intersection to the object
+    var hitInfo = rayBoxIntersection(spt, rdir);
+    
+    // assign colors
+    assignColor(uv, hitInfo.x, i32(hitInfo.y));
+  }
   
 }

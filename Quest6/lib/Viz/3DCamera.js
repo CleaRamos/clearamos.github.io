@@ -30,6 +30,7 @@ export default class Camera {
     this._pose[0] = 1;
     this._focal = new Float32Array(Array(2).fill(1));
     this._resolutions = new Float32Array([width, height]);
+    this._isProjective = true;
   }
   
   resetPose() {
