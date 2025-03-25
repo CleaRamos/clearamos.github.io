@@ -442,10 +442,10 @@ fn boxNormal(idx: i32) -> vec3f {
       return vec3f(0, 0, -1);
     }
     case 1: { //back
-      return vec3f(0, 0, -1);
+      return vec3f(0, 0, 1);
     }
     case 2: { //left
-      return vec3f(-1, 0, 0);
+      return vec3f(1, 0, 0);
     }
     case 3: { //right
       return vec3f(-1, 0, 0);
@@ -454,7 +454,7 @@ fn boxNormal(idx: i32) -> vec3f {
       return vec3f(0, -1, 0);
     }
     case 5: { //down
-      return vec3f(0, -1, 0);
+      return vec3f(0, 1, 0);
     }
     default: {
       return vec3f(0, 0, 0);
@@ -475,12 +475,40 @@ fn getLightInfo(lightPos: vec3f, lightDir: vec3f, hitPoint: vec3f, objectNormal:
   var intensity = light.intensity; 
   // then, compute the distance between the light source and the hit point
   var dist = length(hitPoint - lightPos);
-  // next, compute the attenuation factor
+
+  
+  // // next, compute the attenuation factor
   let factor = light.attenuation[0] + dist * light.attenuation[1] + dist * dist * light.attenuation[2];
-  // now reduce the light intenstiy using the factor
-  intensity /= factor;
-  // compute the view direction
+  
+  // //spot
+  // let spot_angle = pow((dot(lightDir, hitPoint - lightPos)), light.params[1]);
+  // //directional
+  // let factor_directional = 1.0;
+  
+   // compute the view direction
   var viewDirection = normalize(hitPoint - lightPos);
+
+  if (light.params[2] == 0){  //pointlight
+    let factor_point = light.attenuation[0] + dist * light.attenuation[1] + dist * dist * light.attenuation[2];
+    // now reduce the light intenstiy using the factor
+    intensity /= factor_point;
+    // compute the view direction
+    var viewDirection = normalize(hitPoint - lightPos);
+  }
+  else if (light.params[2] == 1) {  //directional light
+    // compute the view direction
+    var viewDirection =lightDir;
+  }
+  else {  //spotlight
+    let spot_angle = dot(lightDir, normalize(hitPoint - lightPos));
+    if spot_angle > cos(light.params[0]){
+         intensity /= (intensity*(pow(spot_angle, light.params[1])))/factor;
+    }
+    // compute the view direction
+    var viewDirection = normalize(hitPoint - lightPos);
+  }
+
+
   // set the final light info
   var out: LightInfo;
   // the final light intensity depends on the view direction
@@ -525,8 +553,8 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
       normal = transformNormal(normal);
       //   4. transform the light to the world coordinates
       //   Note: My light is stationary, so Icancel the camera movement to keep it stationary
-      let lightPos = applyMotorToPoint(light.position.xyz, reverse(cameraPose.motor));
-      let lightDir = applyMotorToDir(light.direction.xyz, reverse(cameraPose.motor));
+      let lightPos = light.position.xyz;
+      let lightDir =light.direction.xyz;
       //   5. transform the hit point to the world coordiantes
       //   Note: the hit point is in the model coordiantes, need to transform back to the world
       var hitPt = spt + rdir * hitInfo.x;
@@ -551,4 +579,67 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
 fn computeProjectiveMain(@builtin(global_invocation_id) global_id: vec3u) {
   // TODO: copy your code of quest 6 here
   // This should be very similar to the orthogonal one above
-}
+
+   // get the pixel coordiantes
+  let uv = vec2i(global_id.xy);
+  let texDim = vec2i(textureDimensions(outTexture));
+  if (uv.x < texDim.x && uv.y < texDim.y) {
+    // compute the pixel size
+    let psize = (vec2f(2, 2) / cameraPose.res.xy)* cameraPose.focal.xy;
+
+
+
+    // project camera ray sent from the origin
+    var spt = vec3f(0,0,0);
+    //passing through pixel center
+    var rdir = normalize(vec3f((f32(uv.x) + 0.5) * psize.x - cameraPose.focal.x, (f32(uv.y) + 0.5) * psize.y - cameraPose.focal.y, 1));
+   
+   //normalize ray direction??
+
+   // apply transformation
+    spt = transformPt(spt);
+    rdir = transformDir(rdir);
+    // compute the intersection to the object
+    var hitInfo = rayBoxIntersection(spt, rdir);
+    
+
+
+    // assign colors
+    var color = vec4f(0.f/255, 56.f/255, 101.f/255, 1.); // Bucknell Blue
+    if (hitInfo.x > 0) { // if there is a hit
+      // here, I provide you with the Lambertian shading implementation
+      // You need to modify it for other shading model
+      // first, get the emit color
+      let emit = boxEmitColor();
+      // then, compute the diffuse color, which depends on the light source
+      //   1. get the box diffuse color - i.e. the material property of diffusion on the box
+      var diffuse = boxDiffuseColor(i32(hitInfo.y)); // get the box diffuse property
+      //   2. get the box normal
+      var normal = boxNormal(i32(hitInfo.y));
+      //   3. transform the normal to the world coordinates
+      //   Note: here it is using the box pose/motor and scale. 
+      //         you will need to modify this transformation for different objects
+      normal = transformNormal(normal);
+      //   4. transform the light to the world coordinates
+      //   Note: My light is stationary, so Icancel the camera movement to keep it stationary
+      let lightPos = light.position.xyz;
+      let lightDir =light.direction.xyz;
+      //   5. transform the hit point to the world coordiantes
+      //   Note: the hit point is in the model coordiantes, need to transform back to the world
+      var hitPt = spt + rdir * hitInfo.x;
+      hitPt = transformHitPoint(hitPt);
+      //   6. compute the light information
+      //   Note: I do the light computation in the world coordiantes because the light intensity depends on the distance and angles in the world coordiantes! If you do it in other coordinate system, make sure you transform them properly back to the world one.
+      let lightInfo = getLightInfo(lightPos, lightDir, hitPt, normal);
+      //   7. finally, modulate the diffuse color by the light
+      diffuse *= lightInfo.intensity;
+      // last, compute the final color. Here Lambertian = emit + diffuse
+      color = emit + diffuse;
+      // Note: I do not use lightInfo.lightdir here, but you will need it for Phong and tone shading
+      
+    }
+    // set the final color to the pixel
+    textureStore(outTexture, uv, color); 
+    }
+  }
+

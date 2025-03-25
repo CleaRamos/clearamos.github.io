@@ -31,6 +31,9 @@ import StandardTextObject from '/lib/DSViz/StandardTextObject.js'
 import RayTracingBoxLightObject from '/lib/DSViz/RayTracingBoxLightObject.js'
 import Camera from '/lib/Viz/3DCamera.js'
 import PointLight from '/lib/Viz/PointLight.js'
+import DirectionalLight from '/lib/Viz/DirectionalLight.js'
+import SpotLight from '/lib/Viz/SpotLight.js'
+
 
 async function init() {
   // Create a canvas tag
@@ -43,13 +46,29 @@ async function init() {
   // Create a 3D Camera
   var camera = new Camera();
   // set a fixed pose for the starter code demo
-  camera._pose[2] = 0.5;
-  camera._pose[3] = 0.5;
+  // camera._pose[2] = 0.5;
+  // camera._pose[3] = 0.5;
   // Create an object to trace
   var tracerObj = new RayTracingBoxLightObject(tracer._device, tracer._canvasFormat, camera);
   await tracer.setTracerObject(tracerObj);
   // Create a light object and set it to our box light object
   // if you want to change light, you just need to change this object and upload it to the GPU by calling traceObje.updateLight(light)
+
+  // if (lightType =0) {
+  //   var light = new PointLight();
+  //   light._params[2] = 0;
+  // }
+  // else if (lightType =1) {
+  //   var light = new DirectionalLight();
+  //   light._params[2] = 1;
+
+  // }
+  // else if (lightType =2) {
+  //   var light = new SpotLight();
+  //   light._params[2] = 2;
+
+  // }
+  
   var light = new PointLight();
   tracerObj.updateLight(light);
   let fps = '??';
@@ -85,9 +104,9 @@ async function init() {
     fpsText.updateText('fps: ' + frameCnt);
     frameCnt = 0;
   }, 1000); // call every 1000 ms
-  return tracer;
-}
 
+
+ 
 //move in X direction
 window.addEventListener("keydown", (a) => {
   switch (a.key) {
@@ -141,44 +160,68 @@ window.addEventListener("keydown", (a) => {
       camera.rotateZ(-rot_angle) 
       tracerObj.updateCameraPose() 
       break;
-//---------- Move Object
-    case 'ArrowLeft': // 
-      tracerObj.moveXObj(-dist) 
+// ---------- Light modes
+
+
+    case 'v': case 'V': // POINT
+       light = new PointLight();
+      light._params[2] = 0;
+      tracerObj.updateLight(light);
       break;
-    case 'ArrowRight': // 
-      tracerObj.moveXObj(dist) 
+    case 'b': case 'B': // Directional
+       light = new DirectionalLight();
+      light._params[2] = 1;
+      
+      tracerObj.updateLight(light);
+
       break;
-    case 'ArrowUp': // 
-      tracerObj.moveYObj(-dist) 
+    case 'n': case 'N': // Spot
+       light = new SpotLight();
+      light._params[2] = 2;
+      // light._params[1] =1;
+      tracerObj.updateLight(light);
+      
+
       break;
-    case 'ArrowDown': // 
-      tracerObj.moveYObj(dist) 
-      break;
-    case '1': // 
-      tracerObj.moveYObj(-dist) 
-      break;
-    case '2': // 
-      tracerObj.moveYObj(dist) 
-      break;
-//---------- Rotate Object
-    case 'v': case 'V': // 
-      tracerObj.rotateXObj(rot_angle) 
-      break;
-    case 'n': case 'N': // 
-      tracerObj.rotateXObj(-rot_angle) 
-      break;
-    case 'g': case 'G': // 
-      tracerObj.rotateYObj(rot_angle) 
-      break;
-    case 'b': case 'B': // 
-      tracerObj.rotateYObj(-rot_angle) 
-      break;
-    case 'f': case 'F': // 
-      tracerObj.rotateZObj(rot_angle) 
-      break;
-    case 'h': case 'H': // 
-      tracerObj.rotateZObj(-rot_angle) 
-      break;
+    
+// //---------- Move Object
+//     case 'ArrowLeft': // 
+//       tracerObj.moveXObj(-dist) 
+//       break;
+//     case 'ArrowRight': // 
+//       tracerObj.moveXObj(dist) 
+//       break;
+//     case 'ArrowUp': // 
+//       tracerObj.moveYObj(-dist) 
+//       break;
+//     case 'ArrowDown': // 
+//       tracerObj.moveYObj(dist) 
+//       break;
+//     case '1': // 
+//       tracerObj.moveYObj(-dist) 
+//       break;
+//     case '2': // 
+//       tracerObj.moveYObj(dist) 
+//       break;
+// //---------- Rotate Object
+//     case 'v': case 'V': // 
+//       tracerObj.rotateXObj(rot_angle) 
+//       break;
+//     case 'n': case 'N': // 
+//       tracerObj.rotateXObj(-rot_angle) 
+//       break;
+//     case 'g': case 'G': // 
+//       tracerObj.rotateYObj(rot_angle) 
+//       break;
+//     case 'b': case 'B': // 
+//       tracerObj.rotateYObj(-rot_angle) 
+//       break;
+//     case 'f': case 'F': // 
+//       tracerObj.rotateZObj(rot_angle) 
+//       break;
+//     case 'h': case 'H': // 
+//       tracerObj.rotateZObj(-rot_angle) 
+//       break;
 //---------- Change camera Mode
     case '0': // orthogonal
       camera._isProjective = false;
@@ -204,6 +247,12 @@ window.addEventListener("keydown", (a) => {
   }
 });
 
+return tracer;
+
+}
+
+
+
 init().then( ret => {
   console.log(ret);
 }).catch( error => {
@@ -212,3 +261,4 @@ init().then( ret => {
   document.body.appendChild(pTag);
   document.getElementById("renderCanvas").remove();
 });
+

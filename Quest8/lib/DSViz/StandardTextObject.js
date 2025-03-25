@@ -84,4 +84,14 @@ export default class StandardTextObject {
       this._textContext.fillText(line, x, y);
     });
   }
+  setPosition(position) {
+    if (position == "top") {
+      this._textCanvas.style.top = '10px';
+      this._textCanvas.style.bottom = '';
+    }
+    else {
+      this._textCanvas.style.top = '';
+      this._textCanvas.style.bottom = '10px';
+    }
+  }
 }

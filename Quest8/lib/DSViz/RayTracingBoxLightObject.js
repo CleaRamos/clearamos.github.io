@@ -30,6 +30,7 @@ export default class RayTracingBoxLightObject extends RayTracingObject {
     this._box = new UnitCube();
     this._camera = camera;
     this._showTexture = showTexture;
+    // this._lightType = lightType;
   }
   
   async createGeometry() {
