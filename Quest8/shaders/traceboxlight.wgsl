@@ -639,8 +639,33 @@ fn computeProjectiveMain(@builtin(global_invocation_id) global_id: vec3u) {
       diffuse *= lightInfo.intensity* max(dot (normal, -lightInfo.lightdir), 0); 
 
       // diffuse *= lightInfo.intensity;
-      // last, compute the final color. Here Lambertian = emit + diffuse
-      color = emit + diffuse;
+     
+
+
+      //TODO: SHADING MODULE
+      //LAMBERTIALN
+        // color = emit + diffuse;
+        // Note: I do not use lightInfo.lightdir here, but you will need it for Phong and tone shading
+        
+
+      //PHONG
+      var ks = vec4f(0.7f, 0.7f, 0.7f, 1); //specular color - shinny material property - color 0-1
+      var gamma = 50.0;//how much it shines
+      var ka =  vec4f(0.1, 0.1, 0.1, 1);//ambient material property
+      
+      color = emit + 
+      saturate(diffuse *
+      lightInfo.intensity * 
+      (max(dot(-lightInfo.lightdir, normal), 0))) + 
+      saturate(ks * 
+      lightInfo.intensity * 
+      pow(dot(rdir,-(reflect(lightInfo.lightdir, normal))), gamma))+ 
+      ka * 
+      lightInfo.intensity;
+
+
+
+
       // Note: I do not use lightInfo.lightdir here, but you will need it for Phong and tone shading
       
     }

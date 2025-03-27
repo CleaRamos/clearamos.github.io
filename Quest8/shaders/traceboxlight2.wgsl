@@ -345,6 +345,12 @@ fn getLightInfo(lightPos: vec3f, lightDir: vec3f, hitPoint: vec3f, objectNormal:
     else {
       intensity *= 0.;
     }
+
+
+
+
+
+
     out.intensity = intensity * max(dot(viewDirection, -objectNormal), 0);
     out.lightdir = viewDirection;
   }
@@ -358,7 +364,7 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
   let uv = vec2i(global_id.xy);
   let texDim = vec2i(textureDimensions(outTexture));
   if (uv.x < texDim.x && uv.y < texDim.y) {
-    // compute the pixel size
+    // compute tshe pixel size
     let psize = vec2f(2, 2) / cameraPose.res.xy;
     // orthogonal camera ray sent from each pixel center at z = 0
     var spt = vec3f((f32(uv.x) + 0.5) * psize.x - 1, (f32(uv.y) + 0.5) * psize.y - 1, 0);
@@ -398,9 +404,20 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
       //   7. finally, modulate the diffuse color by the light
       diffuse *= lightInfo.intensity;
       // last, compute the final color. Here Lambertian = emit + diffuse
-      color = emit + diffuse;
-      // Note: I do not use lightInfo.lightdir here, but you will need it for Phong and tone shading
+
+
+    // //TODO: SHADING MODULE
+    // //LAMBERTIALN
+    //   // color = emit + diffuse;
+    //   // Note: I do not use lightInfo.lightdir here, but you will need it for Phong and tone shading
       
+
+    // //PHONG
+    // ks = vec4f(0.7f, 0.7f, 0.7f, 1) //specular color - shinny material property - color 0-1
+    // gamma = 50//how much it shines
+    // ka =  vec4f(0.1, 0.1, 0.1, 1)//ambient material property
+    // color = emit + diffuse *lightInfo.intensity * (max(dot(viewDirection, -objectNormal), 0)) + ks + lightInfo.intensity * pow(dot(rdir,- (reflect(lightdir, normal)))) + MATProperty * lightInfo.intensity
+
     }
     // set the final color to the pixel
     textureStore(outTexture, uv, color); 
