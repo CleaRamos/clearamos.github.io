@@ -492,27 +492,28 @@ fn getLightInfo(lightPos: vec3f, lightDir: vec3f, hitPoint: vec3f, objectNormal:
     let factor_point = light.attenuation[0] + dist * light.attenuation[1] + dist * dist * light.attenuation[2];
     // now reduce the light intenstiy using the factor
     intensity /= factor_point;
-    // compute the view direction
-    var viewDirection = normalize(hitPoint - lightPos);
   }
   else if (light.params[2] == 1) {  //directional light
     // compute the view direction
-    var viewDirection =lightDir;
+    viewDirection = normalize(lightDir);
+    //intensity *= 0.5;
+    //intensity = vec4f(1, 1, 1, 1);
   }
   else {  //spotlight
     let spot_angle = dot(lightDir, normalize(hitPoint - lightPos));
     if spot_angle > cos(light.params[0]){
-         intensity /= (intensity*(pow(spot_angle, light.params[1])))/factor;
+         intensity *= (intensity*(pow(spot_angle, light.params[1])))/factor;
     }
-    // compute the view direction
-    var viewDirection = normalize(hitPoint - lightPos);
+    else {
+      intensity *= 0;
+    }
   }
 
 
   // set the final light info
   var out: LightInfo;
   // the final light intensity depends on the view direction
-  out.intensity = intensity * max(dot(viewDirection, -objectNormal), 0);
+  out.intensity = intensity;// * max(dot(viewDirection, -objectNormal), 0);
   // the final light diretion is the current view direction
   out.lightdir = viewDirection;
   return out;
@@ -562,8 +563,10 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
       //   6. compute the light information
       //   Note: I do the light computation in the world coordiantes because the light intensity depends on the distance and angles in the world coordiantes! If you do it in other coordinate system, make sure you transform them properly back to the world one.
       let lightInfo = getLightInfo(lightPos, lightDir, hitPt, normal);
+
       //   7. finally, modulate the diffuse color by the light
-      diffuse *= lightInfo.intensity;
+      diffuse *= lightInfo.intensity* max(dot (normal, lightInfo.lightdir), 0); 
+
       // last, compute the final color. Here Lambertian = emit + diffuse
       color = emit + diffuse;
       // Note: I do not use lightInfo.lightdir here, but you will need it for Phong and tone shading
@@ -632,7 +635,10 @@ fn computeProjectiveMain(@builtin(global_invocation_id) global_id: vec3u) {
       //   Note: I do the light computation in the world coordiantes because the light intensity depends on the distance and angles in the world coordiantes! If you do it in other coordinate system, make sure you transform them properly back to the world one.
       let lightInfo = getLightInfo(lightPos, lightDir, hitPt, normal);
       //   7. finally, modulate the diffuse color by the light
-      diffuse *= lightInfo.intensity;
+
+      diffuse *= lightInfo.intensity* max(dot (normal, -lightInfo.lightdir), 0); 
+
+      // diffuse *= lightInfo.intensity;
       // last, compute the final color. Here Lambertian = emit + diffuse
       color = emit + diffuse;
       // Note: I do not use lightInfo.lightdir here, but you will need it for Phong and tone shading
