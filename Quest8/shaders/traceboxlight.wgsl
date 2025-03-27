@@ -640,37 +640,51 @@ fn computeProjectiveMain(@builtin(global_invocation_id) global_id: vec3u) {
 
       // diffuse *= lightInfo.intensity;
      
-
-
       //TODO: SHADING MODULE
-      //LAMBERTIALN
-        // color = emit + diffuse;
-        // Note: I do not use lightInfo.lightdir here, but you will need it for Phong and tone shading
-        
+        var ks = vec4f(0.7f, 0.7f, 0.7f, 1); //specular color - shinny material property - color 0-1
+        var gamma = 50.0;//how much it shines
+        var ka =  vec4f(0.1, 0.1, 0.1, 1);//ambient material property
 
+      //LAMBERTIALN 
+      if (light.params[3] == 0){    
+        color = emit + diffuse;
+      }
       //PHONG
-      var ks = vec4f(0.7f, 0.7f, 0.7f, 1); //specular color - shinny material property - color 0-1
-      var gamma = 50.0;//how much it shines
-      var ka =  vec4f(0.1, 0.1, 0.1, 1);//ambient material property
-      
-      color = emit + 
-      saturate(diffuse *
-      lightInfo.intensity * 
-      (max(dot(-lightInfo.lightdir, normal), 0))) + 
-      saturate(ks * 
-      lightInfo.intensity * 
-      pow(dot(rdir,-(reflect(lightInfo.lightdir, normal))), gamma))+ 
-      ka * 
-      lightInfo.intensity;
+      else if (light.params[3] == 1) { //PHONG
 
-
-
-
-      // Note: I do not use lightInfo.lightdir here, but you will need it for Phong and tone shading
-      
-    }
+        color = emit + 
+        saturate(diffuse *
+        lightInfo.intensity * 
+        (max(dot(-lightInfo.lightdir, normal), 0))) + 
+        saturate(ks * 
+        lightInfo.intensity * 
+        pow(dot(rdir,-(reflect(lightInfo.lightdir, normal))), gamma))+ 
+        ka * 
+        lightInfo.intensity;
+      }
+      //TOON
+      else{  
+         color = emit + 
+        saturate(diffuse *
+        lightInfo.intensity * 
+        (max(dot(-lightInfo.lightdir, normal), 0))) + 
+        saturate(ks * 
+        lightInfo.intensity * 
+        pow(dot(rdir,-(reflect(lightInfo.lightdir, normal))), gamma))+ 
+        ka * 
+        lightInfo.intensity; 
+        var section_length = 0.2; //determines the length of each section of the toon shading
+        //1. divide the RGB of color by the length
+        var red = ceil(color[0]/0.2) *section_length;
+        var green = ceil(color[1]/0.2) *section_length;
+        var blue = ceil(color[2]/0.2) *section_length;
+        color[0] = red;
+        color[1] =green;
+        color[2] = blue;
+        color[3] =  1;
+        }
     // set the final color to the pixel
     textureStore(outTexture, uv, color); 
     }
   }
-
+}

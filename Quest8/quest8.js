@@ -73,7 +73,7 @@ async function init() {
   tracerObj.updateLight(light);
   let fps = '??';
   var fpsText = new StandardTextObject('fps: ' + fps);
-  var instrText = new StandardTextObject('Press the following keys toggle each mode: \nADSWQE: Move Camera \nJLKIUO: Rotate Camera \nArrow Keys/12: Move Object \nVBNFHM: Rotate Object \n0: Orthogonal Camera \n9: Projective Camera \n[]: decrease/increase focal length');
+  var instrText = new StandardTextObject('Press the following keys toggle each mode: \nADSWQE: Move Camera \nJLKIUO: Rotate Camera  \n[ ]: decrease/increase focal length  \nCVB: Point/Directional/Spot Lighting \nZXC: Lambertian/Phong/Toon shading' );
   var fpsText = new StandardTextObject('fps: ' + fps);
   instrText.setPosition("bottom");
 
@@ -162,7 +162,6 @@ window.addEventListener("keydown", (a) => {
       break;
 // ---------- Light modes
 
-
     case 'v': case 'V': // POINT
        light = new PointLight();
       light._params[2] = 0;
@@ -173,16 +172,27 @@ window.addEventListener("keydown", (a) => {
       light._params[2] = 1;
       
       tracerObj.updateLight(light);
-
       break;
     case 'n': case 'N': // Spot
        light = new SpotLight();
       light._params[2] = 2;
       // light._params[1] =1;
       tracerObj.updateLight(light);
-      
-
       break;
+
+// ---------- Shader modes
+  case 'z': // Lambertian
+    light._params[3] = 0;
+    tracerObj.updateLight(light);
+    break;
+ case 'x': // Phong
+   light._params[3] = 1;
+   tracerObj.updateLight(light);
+   break;
+ case 'c': // Toon
+   light._params[3] = 2;
+   tracerObj.updateLight(light);
+   break;
     
 // //---------- Move Object
 //     case 'ArrowLeft': // 
