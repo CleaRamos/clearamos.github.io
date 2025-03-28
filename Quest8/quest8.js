@@ -73,7 +73,7 @@ async function init() {
   tracerObj.updateLight(light);
   let fps = '??';
   var fpsText = new StandardTextObject('fps: ' + fps);
-  var instrText = new StandardTextObject('Press the following keys toggle each mode: \nADSWQE: Move Camera \nJLKIUO: Rotate Camera  \n[ ]: decrease/increase focal length  \nCVB: Point/Directional/Spot Lighting \nZXC: Lambertian/Phong/Toon shading' );
+  var instrText = new StandardTextObject('Press the following keys toggle each mode: \nADSWQE: Move Camera \nJLKIUO: Rotate Camera  \n[ ]: decrease/increase focal length  \nCVB: Point/Directional/Spot lighting \nZXC: Lambertian/Phong/Toon shading' );
   var fpsText = new StandardTextObject('fps: ' + fps);
   instrText.setPosition("bottom");
 

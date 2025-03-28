@@ -683,8 +683,10 @@ fn computeProjectiveMain(@builtin(global_invocation_id) global_id: vec3u) {
         color[2] = blue;
         color[3] =  1;
         }
-    // set the final color to the pixel
+      
+   
+  }
+   // set the final color to the pixel
     textureStore(outTexture, uv, color); 
     }
-  }
 }
