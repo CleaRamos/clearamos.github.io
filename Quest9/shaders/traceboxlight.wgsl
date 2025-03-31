@@ -277,10 +277,12 @@ struct Light {
   params: vec4f,      // other parameters such as cut-off, drop off, area width/height, and radius etc.
 }
 
+const numBoxes: i32 = 2; // the number of boxes
+
 // binding the camera pose
 @group(0) @binding(0) var<uniform> cameraPose: Camera ;
 // binding the box
-@group(0) @binding(1) var<uniform> box: Box;
+@group(0) @binding(1) var<uniform> boxes: array<Box, numBoxes>;
 // binding the output texture to store the ray tracing results
 @group(0) @binding(2) var outTexture: texture_storage_2d<rgba8unorm, write>;
 // binding the Light
@@ -341,51 +343,53 @@ fn quadRayHitCheck(s: vec3f, d: vec3f, q: Quad, ct: f32) -> vec2f {
 }
 
 // a function to transform the direction to the model coordiantes
-fn transformDir(d: vec3f) -> vec3f {
+fn transformDir(d: vec3f, box: i32) -> vec3f {
   // transform the direction using the camera pose
   var out = applyMotorToDir(d, cameraPose.motor);
   // transform it using the object pose
-  out = applyMotorToDir(out, reverse(box.motor));
-  out /= box.scale.xyz;
+  out = applyMotorToDir(out, reverse(boxes[box].motor));
+  out /= boxes[box].scale.xyz;
   return out;
 }
 
 // a function to transform the start pt to the model coordiantes
-fn transformPt(pt: vec3f) -> vec3f {
+fn transformPt(pt: vec3f, box: i32) -> vec3f {
   // transform the point using the camera pose
   var out = applyMotorToPoint(pt, cameraPose.motor);
   // transform it using the object pose
-  out = applyMotorToPoint(out, reverse(box.motor));
-  out /= box.scale.xyz;
+  out = applyMotorToPoint(out, reverse(boxes[box].motor));
+  out /= boxes[box].scale.xyz;
   return out;
 }
 
 // a function to transform normal to the world coordiantes
-fn transformNormal(n: vec3f) -> vec3f {
-  var out = n * box.scale.xyz;
-  out = applyMotorToDir(out, box.motor);
+fn transformNormal(n: vec3f, box: i32) -> vec3f {
+  var out = n * boxes[box].scale.xyz;
+  out = applyMotorToDir(out, boxes[box].motor);
   return normalize(out);
 }
 
 // a function to transform hit point to the world coordiantes
-fn transformHitPoint(pt: vec3f) -> vec3f {
-  var out = pt * box.scale.xyz;
-  out = applyMotorToPoint(out, box.motor);
+fn transformHitPoint(pt: vec3f, box: i32) -> vec3f {
+  var out = pt * boxes[0].scale.xyz;
+  out = applyMotorToPoint(out, boxes[box].motor);
   return out;
 }
 
 // a function to compute the ray box intersection
-fn rayBoxIntersection(s: vec3f, d: vec3f) -> vec2f { // output is (t, idx)
+fn rayBoxIntersection(s: vec3f, d: vec3f, box: i32) -> vec2f { // output is (t, idx)
   // t is the hit value, idx is the fact it hits
   // here we have six planes to check and we keep the cloest hit point
   var t = -1.;
   var idx = -1.;
-  for (var i = 0; i < 6; i++) {
-    let info = quadRayHitCheck(s, d, box.faces[i], t);
+  for(var i = 0; i < 6; i++) {
+    let info = quadRayHitCheck(s, d, boxes[box].faces[i], t);
     if (info.y > 0) {
-      t = info.x;
-      idx = f32(i);
+        t = info.x;
+        idx = f32(i);
+    
     }
+  
   }
   return vec2f(t, idx);
 }
@@ -442,10 +446,10 @@ fn boxNormal(idx: i32) -> vec3f {
       return vec3f(0, 0, -1);
     }
     case 1: { //back
-      return vec3f(0, 0, -1);
+      return vec3f(0, 0, 1);
     }
     case 2: { //left
-      return vec3f(-1, 0, 0);
+      return vec3f(1, 0, 0);
     }
     case 3: { //right
       return vec3f(-1, 0, 0);
@@ -454,7 +458,7 @@ fn boxNormal(idx: i32) -> vec3f {
       return vec3f(0, -1, 0);
     }
     case 5: { //down
-      return vec3f(0, -1, 0);
+      return vec3f(0, 1, 0);
     }
     default: {
       return vec3f(0, 0, 0);
@@ -475,16 +479,45 @@ fn getLightInfo(lightPos: vec3f, lightDir: vec3f, hitPoint: vec3f, objectNormal:
   var intensity = light.intensity; 
   // then, compute the distance between the light source and the hit point
   var dist = length(hitPoint - lightPos);
-  // next, compute the attenuation factor
+
+  
+  // // next, compute the attenuation factor
   let factor = light.attenuation[0] + dist * light.attenuation[1] + dist * dist * light.attenuation[2];
-  // now reduce the light intenstiy using the factor
-  intensity /= factor;
-  // compute the view direction
+  
+  // //spot
+  // let spot_angle = pow((dot(lightDir, hitPoint - lightPos)), light.params[1]);
+  // //directional
+  // let factor_directional = 1.0;
+  
+   // compute the view direction
   var viewDirection = normalize(hitPoint - lightPos);
+
+  if (light.params[2] == 0){  //pointlight
+    let factor_point = light.attenuation[0] + dist * light.attenuation[1] + dist * dist * light.attenuation[2];
+    // now reduce the light intenstiy using the factor
+    intensity /= factor_point;
+  }
+  else if (light.params[2] == 1) {  //directional light
+    // compute the view direction
+    viewDirection = normalize(lightDir);
+    //intensity *= 0.5;
+    //intensity = vec4f(1, 1, 1, 1);
+  }
+  else {  //spotlight
+    let spot_angle = dot(lightDir, normalize(hitPoint - lightPos));
+    if spot_angle > cos(light.params[0]){
+         intensity *= (intensity*(pow(spot_angle, light.params[1])))/factor;
+    }
+    else {
+      intensity *= 0;
+    }
+  }
+
+
   // set the final light info
   var out: LightInfo;
   // the final light intensity depends on the view direction
-  out.intensity = intensity * max(dot(viewDirection, -objectNormal), 0);
+  out.intensity = intensity;// * max(dot(viewDirection, -objectNormal), 0);
   // the final light diretion is the current view direction
   out.lightdir = viewDirection;
   return out;
@@ -502,11 +535,34 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
     // orthogonal camera ray sent from each pixel center at z = 0
     var spt = vec3f((f32(uv.x) + 0.5) * psize.x - 1, (f32(uv.y) + 0.5) * psize.y - 1, 0);
     var rdir = vec3f(0, 0, 1);
+
+   var hitPt: vec3f = vec3f(10000000);
+    var hitInfo: vec2f;
+    var hitBox: i32;
+    //find transformPt and transformDir for each object and get min
+    for (var i = 0; i < i32(numBoxes); i++) {
+      // apply transformation
+      var tempSpt = transformPt(spt, i);
+      var tempRdir = transformDir(rdir, i);
+      var tempHitInfo = rayBoxIntersection(tempSpt, tempRdir,i);
+      if (tempHitInfo.x>0){
+        if(length(tempSpt + tempRdir * tempHitInfo.x) < length(hitPt)){
+        hitInfo = tempHitInfo;
+        hitPt = tempSpt +tempRdir * tempHitInfo.x;
+        hitBox = i;
+        spt = tempSpt;
+        rdir = tempRdir;
+        }
+      }
+
+    }
+
+
     // apply transformation
-    spt = transformPt(spt);
-    rdir = transformDir(rdir);
+    // spt = transformPt(spt, );
+    // rdir = transformDir(rdir);
     // compute the intersection to the object
-    var hitInfo = rayBoxIntersection(spt, rdir);
+    // var hitInfo = rayBoxIntersection(spt, rdir);
     // assign colors
     var color = vec4f(0.f/255, 56.f/255, 101.f/255, 1.); // Bucknell Blue
     if (hitInfo.x > 0) { // if there is a hit
@@ -522,20 +578,22 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
       //   3. transform the normal to the world coordinates
       //   Note: here it is using the box pose/motor and scale. 
       //         you will need to modify this transformation for different objects
-      normal = transformNormal(normal);
+      normal = transformNormal(normal, hitBox);
       //   4. transform the light to the world coordinates
       //   Note: My light is stationary, so Icancel the camera movement to keep it stationary
-      let lightPos = applyMotorToPoint(light.position.xyz, reverse(cameraPose.motor));
-      let lightDir = applyMotorToDir(light.direction.xyz, reverse(cameraPose.motor));
+      let lightPos = light.position.xyz;
+      let lightDir =light.direction.xyz;
       //   5. transform the hit point to the world coordiantes
       //   Note: the hit point is in the model coordiantes, need to transform back to the world
-      var hitPt = spt + rdir * hitInfo.x;
-      hitPt = transformHitPoint(hitPt);
+      // var hitPt = spt + rdir * hitInfo.x;
+      hitPt = transformHitPoint(hitPt, hitBox);
       //   6. compute the light information
       //   Note: I do the light computation in the world coordiantes because the light intensity depends on the distance and angles in the world coordiantes! If you do it in other coordinate system, make sure you transform them properly back to the world one.
       let lightInfo = getLightInfo(lightPos, lightDir, hitPt, normal);
+
       //   7. finally, modulate the diffuse color by the light
-      diffuse *= lightInfo.intensity;
+      diffuse *= lightInfo.intensity* max(dot (normal, lightInfo.lightdir), 0); 
+
       // last, compute the final color. Here Lambertian = emit + diffuse
       color = emit + diffuse;
       // Note: I do not use lightInfo.lightdir here, but you will need it for Phong and tone shading
@@ -551,4 +609,133 @@ fn computeOrthogonalMain(@builtin(global_invocation_id) global_id: vec3u) {
 fn computeProjectiveMain(@builtin(global_invocation_id) global_id: vec3u) {
   // TODO: copy your code of quest 6 here
   // This should be very similar to the orthogonal one above
+
+   // get the pixel coordiantes
+  let uv = vec2i(global_id.xy);
+  let texDim = vec2i(textureDimensions(outTexture));
+  if (uv.x < texDim.x && uv.y < texDim.y) {
+    // compute the pixel size
+    let psize = (vec2f(2, 2) / cameraPose.res.xy)* cameraPose.focal.xy;
+
+     // project camera ray sent from the origin
+    var spt = vec3f(0,0,0);
+    //passing through pixel center
+    var rdir = normalize(vec3f((f32(uv.x) + 0.5) * psize.x - cameraPose.focal.x, (f32(uv.y) + 0.5) * psize.y - cameraPose.focal.y, 1));
+
+    var hitPt: vec3f = vec3f(10000000);
+    var hitInfo: vec2f = vec2f(1000000);;
+    var hitBox: i32;
+    //find transformPt and transformDir for each object and get min
+    var tempTempSpt = spt;
+    var tempTempRdir = rdir;
+    for (var i = 0; i < i32(numBoxes); i++) {
+      // apply transformation
+      var tempSpt = transformPt(tempTempSpt, i);
+      var tempRdir = transformDir(tempTempRdir, i);
+      var tempHitInfo = rayBoxIntersection(tempSpt, tempRdir,i);
+      if (tempHitInfo.x>0){
+        if(tempHitInfo.x < hitInfo.x){
+        hitInfo = tempHitInfo;
+        hitPt = tempSpt +tempRdir * tempHitInfo.x;
+        hitBox = i;
+        spt = tempSpt;
+        rdir = tempRdir;
+        }
+      }
+
+    }
+
+  
+   //normalize ray direction??
+
+   // apply transformation
+    // spt = transformPt(spt);
+    // rdir = transformDir(rdir);
+    // // compute the intersection to the object
+    // var hitInfo = rayBoxIntersection(spt, rdir);
+    
+
+
+    // assign colors
+    var color = vec4f(0.f/255, 56.f/255, 101.f/255, 1.); // Bucknell Blue
+    if (hitInfo.x > 0) { // if there is a hit
+      // here, I provide you with the Lambertian shading implementation
+      // You need to modify it for other shading model
+      // first, get the emit color
+      let emit = boxEmitColor();
+      // then, compute the diffuse color, which depends on the light source
+      //   1. get the box diffuse color - i.e. the material property of diffusion on the box
+      var diffuse = boxDiffuseColor(i32(hitInfo.y)); // get the box diffuse property
+      //   2. get the box normal
+      var normal = boxNormal(i32(hitInfo.y));
+      //   3. transform the normal to the world coordinates
+      //   Note: here it is using the box pose/motor and scale. 
+      //         you will need to modify this transformation for different objects
+      normal = transformNormal(normal, hitBox);
+      //   4. transform the light to the world coordinates
+      //   Note: My light is stationary, so Icancel the camera movement to keep it stationary
+      let lightPos = light.position.xyz;
+      let lightDir =light.direction.xyz;
+      //   5. transform the hit point to the world coordiantes
+      //   Note: the hit point is in the model coordiantes, need to transform back to the world
+      // var hitPt = spt + rdir * hitInfo.x;
+      hitPt = transformHitPoint(hitPt, hitBox);
+      //   6. compute the light information
+      //   Note: I do the light computation in the world coordiantes because the light intensity depends on the distance and angles in the world coordiantes! If you do it in other coordinate system, make sure you transform them properly back to the world one.
+      let lightInfo = getLightInfo(lightPos, lightDir, hitPt, normal);
+      //   7. finally, modulate the diffuse color by the light
+
+      diffuse *= lightInfo.intensity* max(dot (normal, -lightInfo.lightdir), 0); 
+
+      // diffuse *= lightInfo.intensity;
+     
+      //TODO: SHADING MODULE
+        var ks = vec4f(0.7f, 0.7f, 0.7f, 1); //specular color - shinny material property - color 0-1
+        var gamma = 50.0;//how much it shines
+        var ka =  vec4f(0.1, 0.1, 0.1, 1);//ambient material property
+
+      //LAMBERTIALN 
+      if (light.params[3] == 0){    
+        color = emit + diffuse;
+      }
+      //PHONG
+      else if (light.params[3] == 1) { //PHONG
+
+        color = emit + 
+        saturate(diffuse *
+        lightInfo.intensity * 
+        (max(dot(-lightInfo.lightdir, normal), 0))) + 
+        saturate(ks * 
+        lightInfo.intensity * 
+        pow(dot(rdir,-(reflect(lightInfo.lightdir, normal))), gamma))+ 
+        ka * 
+        lightInfo.intensity;
+      }
+      //TOON
+      else{  
+         color = emit + 
+        saturate(diffuse *
+        lightInfo.intensity * 
+        (max(dot(-lightInfo.lightdir, normal), 0))) + 
+        saturate(ks * 
+        lightInfo.intensity * 
+        pow(dot(rdir,-(reflect(lightInfo.lightdir, normal))), gamma))+ 
+        ka * 
+        lightInfo.intensity; 
+        var section_length = 0.2; //determines the length of each section of the toon shading
+        //1. divide the RGB of color by the length
+        var red = ceil(color[0]/0.2) *section_length;
+        var green = ceil(color[1]/0.2) *section_length;
+        var blue = ceil(color[2]/0.2) *section_length;
+        color[0] = red;
+        color[1] =green;
+        color[2] = blue;
+        color[3] =  1;
+        }
+      
+   
+  }
+   // set the final color to the pixel
+    textureStore(outTexture, uv, color); 
+    }
 }

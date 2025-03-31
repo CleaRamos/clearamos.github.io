@@ -37,5 +37,6 @@ export default class SpotLight extends Light {
     // drop off determine how fast the light attennuation goes away from the center
     this._params[0] = cutoff;
     this._params[1] = dropoff;
+    
   }
 }

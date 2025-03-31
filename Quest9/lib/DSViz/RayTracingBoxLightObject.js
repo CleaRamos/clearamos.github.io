@@ -27,9 +27,28 @@ import UnitCube from "/lib/DS/UnitCube.js"
 export default class RayTracingBoxLightObject extends RayTracingObject {
   constructor(device, canvasFormat, camera, showTexture = true) {
     super(device, canvasFormat);
+    this._object_list = [];
+
+    
     this._box = new UnitCube();
+    this._box._scales[0] = 1;
+    this._box._scales[1] = 1;
+    this._box._scales[2] = 1;
+    this._box._scales[3] = 1;
+    
+    this._box2 = new UnitCube();
+    this._box2._scales[0] = 4;
+    this._box2._scales[1] = 4;
+    this._box2._scales[2] = 4;
+    this._box2._scales[3] = 4;
+    this._object_list[0] = this._box;
+    this._object_list[1] = this._box2;
+
+
+
     this._camera = camera;
     this._showTexture = showTexture;
+    // this._lightType = lightType;
   }
   
   async createGeometry() {
@@ -48,7 +67,7 @@ export default class RayTracingBoxLightObject extends RayTracingObject {
     // Note, here we combine all the information in one buffer
     this._boxBuffer = this._device.createBuffer({
       label: "Box " + this.getName(),
-      size: this._box._pose.byteLength + this._box._scales.byteLength + this._box._top.byteLength * 6,
+      size: (this._box._pose.byteLength + this._box._scales.byteLength + this._box._top.byteLength * 6) * this._object_list.length,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     // Copy from CPU to GPU
@@ -69,6 +88,31 @@ export default class RayTracingBoxLightObject extends RayTracingObject {
     this._device.queue.writeBuffer(this._boxBuffer, offset, this._box._top);
     offset += this._box._top.byteLength;
     this._device.queue.writeBuffer(this._boxBuffer, offset, this._box._down);
+
+    //buffer for box 2
+    //increase offset 
+    offset += this._box._down.byteLength;
+    this._device.queue.writeBuffer(this._boxBuffer, offset, this._box2._pose);
+    offset += this._box2._pose.byteLength;
+    this._device.queue.writeBuffer(this._boxBuffer, offset, this._box2._scales);
+    offset += this._box2._scales.byteLength;
+    this._device.queue.writeBuffer(this._boxBuffer, offset, this._box2._front);
+    offset += this._box2._front.byteLength;
+    this._device.queue.writeBuffer(this._boxBuffer, offset, this._box2._back);
+    offset += this._box2._back.byteLength;
+    this._device.queue.writeBuffer(this._boxBuffer, offset, this._box2._left);
+    offset += this._box2._left.byteLength;
+    this._device.queue.writeBuffer(this._boxBuffer, offset, this._box2._right);
+    offset += this._box2._right.byteLength;
+    this._device.queue.writeBuffer(this._boxBuffer, offset, this._box2._top);
+    offset += this._box2._top.byteLength;
+    this._device.queue.writeBuffer(this._boxBuffer, offset, this._box2._down);
+
+
+
+
+
+
     // Create light buffer to store the light in GPU
     // Note: our light has a common memory layout - check the abstract light class
     this._lightBuffer = this._device.createBuffer({
