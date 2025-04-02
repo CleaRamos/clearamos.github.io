@@ -21,9 +21,9 @@
  *                                anything the license permits.
  */
 
-import RayTracingObject from "/lib/DSViz/RayTracingObject.js"
-import UnitCube from "/lib/DS/UnitCube.js"
-import PGA3D from '/lib/Math/PGA3D.js'
+import RayTracingObject from "./RayTracingObject.js"
+import UnitCube from "/Quest6/lib/DS/UnitCube.js"
+import PGA3D from '/Quest6/lib/Math/PGA3D.js'
 
 
 export default class RayTracingBoxObject extends RayTracingObject {
@@ -96,7 +96,7 @@ export default class RayTracingBoxObject extends RayTracingObject {
   }
 
   async createShaders() {
-    let shaderCode = await this.loadShader("/shaders/tracebox.wgsl");
+    let shaderCode = await this.loadShader("./shaders/tracebox.wgsl");
     this._shaderModule = this._device.createShaderModule({
       label: " Shader " + this.getName(),
       code: shaderCode,
