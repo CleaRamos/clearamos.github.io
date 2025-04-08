@@ -89,12 +89,20 @@ export default class StandardTextObject {
     if (position == "top") {
       this._textCanvas.style.top = '10px';
       this._textCanvas.style.bottom = '';
-
-
     }
-    else {
+    else if (position == "bottom") {
       this._textCanvas.style.top = '';
       this._textCanvas.style.bottom = '10px';
+    }
+    else if (position == "left") {
+      this._textCanvas.style.top = '';
+      this._textCanvas.style.left = '';
+      this._textCanvas.style.bottom = '10px';
+      this._textCanvas.style.right = '10px';
+    }
+    else if (position == "right") {
+      this._textCanvas.style.left = '';
+      this._textCanvas.style.right = '10px';
     }
 
   }

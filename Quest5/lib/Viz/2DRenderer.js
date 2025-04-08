@@ -71,6 +71,10 @@ export default class Renderer {
     await obj.init();
     this._objects.push(obj);
   }
+
+  async removeSceneObject(obj) {
+    this._objects = this._objects.filter(item => item !== obj);
+  }
   
   renderToSelectedView(outputView) {
     // update cpu geometry if needed
