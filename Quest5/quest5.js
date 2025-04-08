@@ -38,10 +38,16 @@ async function init() {
   // Create a 2d animated renderer
   const renderer = new Renderer(canvasTag);
   await renderer.init();
-  const polygon = new PolygonObject(renderer._device, renderer._canvasFormat, '/assets/box.polygon');
+  // const polygon = new PolygonObject(renderer._device, renderer._canvasFormat, '/assets/box.polygon');
+  const polygon = new PolygonObject(renderer._device, renderer._canvasFormat, '/assets/dense.polygon');
+
   await renderer.appendSceneObject(polygon);
   let fps = '??';
   var fpsText = new StandardTextObject('fps: ' + fps);
+
+ 
+  var instrText = new StandardTextObject('Press the following keys toggle each mode: ');
+  instrText.setPosition("bottom");
   
   // run animation at 60 fps
   var frameCnt = 0;
@@ -58,6 +64,87 @@ async function init() {
     }
     requestAnimationFrame(renderFrame);
   };
+
+  console.log("polygon vertices:")
+  console.log(polygon._vertices.length)
+
+  // TODO: implemnt the mousemove functio to track the mouse position
+  canvasTag.addEventListener('mousemove', (e) => {
+
+
+
+    
+      var mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      var mouseY = (-e.clientY / window.innerHeight) * 2 + 1;
+      console.log(`mouse position (${mouseX}, ${mouseY})`);
+     
+
+    // TODO: iterate through the vertices of the polygon - want to check each verticeiesof the polygon with the  isInside funciton
+
+    // var insideAll = true;
+    // for (let i = 0; i < 7; i+=2) {
+    //   // console.log(polygon._polygon.isInside([polygon[0], polygon[1]], [polygon[2], polygon[3]], [mouseX, mouseY]));
+      
+    //   if (!(polygon._polygon.isInside([polygon._vertices[i], polygon._vertices[i+1]], [polygon._vertices[i+2], polygon._vertices[i+3]], [mouseX, mouseY]))){
+    //     insideAll = false;
+    //     break;
+    //   }
+    // }
+
+    // if (insideAll == true) {
+    //   console.log("inside polygon")
+    // } else {
+    //   console.log("outside polygon")
+    // }
+
+
+
+    // TODO: implment winding number function for non-convex polygons
+    // given a point p
+    var p = [mouseX, mouseY]
+    //pick direction want to check - x direction
+    //initialize two winding numbers to 0s
+    var windingPos =0;
+    var windingNeg =0;
+
+    // for each edge of polygon
+    // console.log(polygon._vertices.length)
+    for (let i = 0; i< polygon._vertices.length -1; i+=2){
+      // get the two vertices of the edge
+      var v0 = [polygon._vertices[i], polygon._vertices[i+1]];
+      var v1 = [polygon._vertices[i+2], polygon._vertices[i+3]];
+
+      //Check if a point drawn horizontally from p intersects the edge (v0, v1)
+      if (mouseY > Math.min(v0[1], v1[1]) && mouseY < Math.max(v0[1], v1[1])) {
+        // check if p is to the left of the edge (v0, v1)
+        if (mouseX > Math.min(v0[0], v1[0])) {
+          windingPos += 1;
+        } else {
+          windingNeg += 1;
+        }
+      }
+
+    }
+
+    if (windingPos ==0 || windingNeg ==0) {
+      console.log("outside polygon")
+    }
+    else {
+      console.log("inside polygon")
+    }
+
+    //check if plint is within horizontal/vertical region
+
+
+
+
+
+
+  });
+
+
+
+
   lastCalled = Date.now();
   renderFrame();
   setInterval(() => { 
@@ -65,6 +152,9 @@ async function init() {
     frameCnt = 0;
   }, 1000); // call every 1000 ms
   return renderer;
+
+
+
 }
 
 init().then( ret => {
