@@ -26,10 +26,10 @@
 // Chrome & Edge 113+ : Enable Vulkan, Default ANGLE Vulkan, Vulkan from ANGLE, Unsafe WebGPU Support, and WebGPU Developer Features (if exsits)
 // Firefox Nightly: sudo snap install firefox --channel=latext/edge or download from https://www.mozilla.org/en-US/firefox/channel/desktop/
 
-import Renderer from '/lib/Viz/2DRenderer.js'
-import PolygonObject from '/lib/DSViz/PolygonObject.js'
-import Polygon from '/lib/DS/Polygon.js'
-import StandardTextObject from '/lib/DSViz/StandardTextObject.js'
+import Renderer from '/Quest5/lib/Viz/2DRenderer.js'
+import PolygonObject from '/Quest5/lib/DSViz/PolygonObject.js'
+import Polygon from '/Quest5/lib/DS/Polygon.js'
+import StandardTextObject from '/Quest5/lib/DSViz/StandardTextObject.js'
 
 async function init() {
   // Create a canvas tag
@@ -39,7 +39,7 @@ async function init() {
   // Create a 2d animated renderer
   const renderer = new Renderer(canvasTag);
   await renderer.init();
-  const polygon = new PolygonObject(renderer._device, renderer._canvasFormat, '/assets/box.polygon');
+  const polygon = new PolygonObject(renderer._device, renderer._canvasFormat, '/Quest5/assets/box.polygon');
  
 
   window.addEventListener("keydown", async(q) => {
@@ -48,31 +48,31 @@ async function init() {
       //change between shapes
       case 'q':
         await renderer.removeSceneObject(polygon);
-        polygon._polygon= new Polygon('/assets/circle.box');
+        polygon._polygon= new Polygon('./assets/circle.box');
         await polygon.createGeometry();
         await renderer.appendSceneObject(polygon);
         break;
       case 'w':
         await renderer.removeSceneObject(polygon);
-        polygon._polygon= new Polygon('/assets/circle.polygon');
+        polygon._polygon= new Polygon('./assets/circle.polygon');
         await polygon.createGeometry();
         await renderer.appendSceneObject(polygon);
         break;
       case 'e':
         await renderer.removeSceneObject(polygon);
-        polygon._polygon= new Polygon('/assets/star.polygon');
+        polygon._polygon= new Polygon('./assets/star.polygon');
         await polygon.createGeometry();
         await renderer.appendSceneObject(polygon);
         break;
       case 'r':
         await renderer.removeSceneObject(polygon);
-        polygon._polygon= new Polygon('/assets/human.polygon');
+        polygon._polygon= new Polygon('./assets/human.polygon');
         await polygon.createGeometry();
         await renderer.appendSceneObject(polygon);
         break;
       case 't':
         await renderer.removeSceneObject(polygon);
-        polygon._polygon= new Polygon('/assets/dense.polygon');
+        polygon._polygon= new Polygon('./assets/dense.polygon');
         await polygon.createGeometry();
         await renderer.appendSceneObject(polygon);
         break;
